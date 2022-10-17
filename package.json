@@ -1,0 +1,24 @@
+{
+  "name": "pixelplex_nodejs_course",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pecheneg95/pixelplex_nodejs_course.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pecheneg95/pixelplex_nodejs_course/issues"
+  },
+  "homepage": "https://github.com/pecheneg95/pixelplex_nodejs_course#readme",
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}
