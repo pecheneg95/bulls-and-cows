@@ -1,10 +1,10 @@
 # pixelplex_nodejs_course
 
-### Project: Игра “Быки и коровы”
+# Project: Игра “Быки и коровы”
 
 ## API
 
-# Создать пользователя
+### Создать пользователя
 POST api/v1/users
 {
   username: string,
@@ -17,7 +17,7 @@ DTO:
   status: string,
 }
 
-# Login
+### Login
 POST api/v1/users/login
 {
   password: string,
@@ -29,7 +29,7 @@ DTO:
   status: string,
 }
 
-# Logout
+### Logout
 POST api/v1/users/logout
 
 DTO:
@@ -37,7 +37,7 @@ DTO:
   status: string,
 }
 
-# Получить данные о себе
+### Получить данные о себе
 GET api/v1/users/me
 
 DTO:
@@ -46,7 +46,7 @@ DTO:
   user: User,
 }
 
-# Изменить данные пользователя (не критичные)
+### Изменить данные пользователя (не критичные)
 PATCH api/v1/users
 {
   user: User,
@@ -57,7 +57,7 @@ DTO:
   status: string,
 }
 
-# Изменить email пользователя
+### Изменить email пользователя
 PATCH api/v1/users/email
 {
   email: string,
@@ -68,7 +68,7 @@ DTO:
   status: string,
 }
 
-# Изменить пароль пользователя
+### Изменить пароль пользователя
 PATCH api/v1/users/password
 {
   password: string,
@@ -79,7 +79,7 @@ DTO:
   status: string,
 }
 
-# Удалить пользователя
+### Удалить пользователя
 DELETE api/v1/users
 
 DTO:
@@ -87,7 +87,7 @@ DTO:
   status: string,
 }
 
-# Создать игру
+### Создать игру
 POST api/v1/games
 
 DTO:
@@ -95,7 +95,7 @@ DTO:
   status: string,
 }
 
-# Отменить игру (удалить)
+### Отменить игру (удалить)
 DELETE api/v1/games/:gameId
 
 DTO:
@@ -103,7 +103,7 @@ DTO:
   status: string,
 }
 
-# Пригласить в игру
+### Пригласить в игру
 POST api/v1/games/:gameId/invitation
 {
   opponentId: userId,
@@ -114,7 +114,7 @@ DTO:
   status: string,
 }
 
-# Изменить противника
+### Изменить противника
 PATCH api/v1/games/:gameId/invitation
 {
   opponentId: userId,
@@ -125,7 +125,7 @@ DTO:
   status: string,
 }
 
-# Подключится к игре
+### Подключится к игре
 PUT api/v1/games/:gameId
 
 DTO:
@@ -133,7 +133,7 @@ DTO:
   status: string,
 }
 
-# Получить информацию об игре
+### Получить информацию об игре
 GET api/v1/games/:gameId
 
 DTO:
@@ -142,7 +142,7 @@ DTO:
   game: Game,
 }
 
-# Сделать ход
+### Сделать ход
 PATCH api/v1/games/:gameId/step
 
 {
@@ -155,7 +155,7 @@ DTO:
 }
 
 
-# Получить информацию о всех своих играх (с филльтрацией)
+### Получить информацию о всех своих играх (с филльтрацией)
 GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
 
   -Фильтрация
@@ -178,7 +178,7 @@ DTO:
   games: Game[],
 }
 
-# Получить статистику о чужих играх
+### Получить статистику о чужих играх
 GET api/v1/users/:userId/stats
 
 DTO:
@@ -187,7 +187,7 @@ DTO:
   stats: userId.stats,
 }
 
-# Поcмотреть leaderboard
+### Поcмотреть leaderboard
 GET api/v1/leaderboard?sort=:criterion&from=:date&to:=date&offset=:offset&limit=:limit
 
   -Сортировка(критерии)
@@ -208,7 +208,7 @@ DTO:
   leadbord: User[],
 }
 
-# Посмотреть свои контакты
+### Посмотреть свои контакты
 GET api/v1/users/contacts&offset=:offset&limit=:limit
 
   -Пагинация
