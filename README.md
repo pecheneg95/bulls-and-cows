@@ -29,6 +29,14 @@ DTO:
   status: string,
 }
 
+# Logout
+POST api/v1/users/logout
+
+DTO:
+{
+  status: string,
+}
+
 # Получить данные о себе
 GET api/v1/users/me
 
@@ -148,15 +156,29 @@ DTO:
 
 
 # Получить информацию о всех своих играх (с филльтрацией)
-GET api/v1/users/allgames?userId=:userId&status=:status&date=:date&page=:page
+GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
+
+  -Фильтрация
+    filter: 'usersId' | 'status',
+      usersId: number[],
+      status: boolean,
+
+  -Соритровка
+    sort[type]: 'asc' | 'desc' | 'none',
+    sort[field]: сreationDate,
+
+  -Пагинация
+    offset: number,
+    limit: number,
 
 DTO:
 {
   status: string,
+  countGames: number,
   games: Game[],
 }
 
-# Получить информацию о всех чужих играх
+# Получить статистику о чужих играх
 GET api/v1/users/:userId/stats
 
 DTO:
@@ -166,19 +188,36 @@ DTO:
 }
 
 # Поcмотреть leaderboard
-GET api/v1/leaderboard?criterion=:criterion&from=:date&to:=date
+GET api/v1/leaderboard?sort=:criterion&from=:date&to:=date&offset=:offset&limit=:limit
+
+  -Сортировка(критерии)
+    criterion: 'countWins' | 'countCompleted' | 'countStepsToWin',
+
+  -Промежуток
+    from: date,
+    to: date,
+
+  -Пагинация
+    offset: number,
+    limit: number,
 
 DTO:
 {
   status: string,
+  countUsers: number,
   leadbord: User[],
 }
 
 # Посмотреть свои контакты
-GET api/v1/users/contacts
+GET api/v1/users/contacts&offset=:offset&limit=:limit
+
+  -Пагинация
+    offset: number,
+    limit: number,
 
 DTO:
 {
   status: string,
+  countContacts: number,
   contacts: User[],
 }
