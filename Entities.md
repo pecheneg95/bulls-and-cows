@@ -1,15 +1,16 @@
 # ENTITIES
 
 ## 1. User
+```Typescript
 {
   id: number,
   name: string,
   password: string,
   email: string,
-  contactIds: number[], 
 }
-
+```
 ## 2. Stats
+```Typescript
 {
   id: number,
   userId: number,
@@ -18,8 +19,9 @@
   countCompleted: number,
   countStepsToWin: number,
 }
-
+```
 ## 3. Game
+```Typescript
 {
   id: number,
   creatorId: number,
@@ -28,8 +30,9 @@
   winnerId: number || null,
   answer: number || null, 
 }
-
+```
 ## 4. Step
+```Typescript
 {
   id: number,
   userId: number,
@@ -37,9 +40,9 @@
   sequence: number,
   value: number, 
 }
-
+```
 ## RELATIONS
-
+```Typescript
 1. User - Stats: one-to-one relation
     Stats.usersId(PK)
 
@@ -51,3 +54,4 @@
 
 4. Game - Step:  one-to-many relation
     Game.id(PK) - Step.gameId(FK)
+```
