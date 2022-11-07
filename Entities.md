@@ -4,7 +4,7 @@
 ```Typescript
 {
   id: number,
-  name: string,
+  username: string,
   password: string,
   email: string,
 }
@@ -28,7 +28,8 @@
   opponentId: number,
   status:  'created' | 'started' | 'finished'
   winnerId: number || null,
-  answer: number || null, 
+  hiddenNumberByCreator: number || null, 
+  hiddenNumberByOpponent: number || null, 
 }
 ```
 ## 4. Step
