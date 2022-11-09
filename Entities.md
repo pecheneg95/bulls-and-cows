@@ -7,20 +7,11 @@
   username: string,
   password: string,
   email: string,
+  role: 'member' | 'admin',
 }
 ```
-## 2. Stats
-```Typescript
-{
-  id: number,
-  userId: number,
-  countGames: number,
-  countWins: number,
-  countCompleted: number,
-  countStepsToWin: number,
-}
-```
-## 3. Game
+
+## 2. Game
 ```Typescript
 {
   id: number,
@@ -30,9 +21,10 @@
   winnerId: number || null,
   hiddenNumberByCreator: number || null, 
   hiddenNumberByOpponent: number || null, 
+  hiddenNumberLength: number,
 }
 ```
-## 4. Step
+## 3. Step
 ```Typescript
 {
   id: number,
@@ -40,19 +32,18 @@
   gameId: number,
   sequence: number,
   value: number, 
+  bulls: number,
+  cows: number,
 }
 ```
 ## RELATIONS
 ```Typescript
-1. User - Stats: one-to-one relation
-    Stats.usersId(PK)
-
-2. User - Game: one-to-many relation
+1. User - Game: one-to-many relation
     User.id(PK) - Game.opponentId(FK),  Game.creatorId(FK)
 
-3. User - Step: one-to-many relation
+2. User - Step: one-to-many relation
     User.id(PK) - Step.userId(FK)
 
-4. Game - Step:  one-to-many relation
+3. Game - Step:  one-to-many relation
     Game.id(PK) - Step.gameId(FK)
 ```
