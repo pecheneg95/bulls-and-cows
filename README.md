@@ -4,6 +4,44 @@
 
 ## API
 
+### Types
+```TypeScript
+Game DTO{
+  id: number,
+  creatorId: number,
+  opponentId: number,
+  status:  'created' | 'started' | 'finished'
+  winnerId: number || null,
+  hiddenNumberByCreator: number || null, 
+  hiddenNumberByOpponent: number || null,
+  hiddenNumberLength: number,
+  steps: Step[],
+}
+
+Step {
+  id: number,
+  userId: number,
+  sequence: number,
+  value: number, 
+}
+
+User DTO{
+  id: number,
+  username: string,
+  email: string.
+  role: 'member' | 'admin',
+}
+
+Stats DTO {
+  userid: number,
+  username: string,
+  countGames: number,
+  countWins: number,
+  countCompleted: number,
+  countStepsToWin: number,
+}
+```
+
 ### Sign-up
 POST api/v1/auth/sign-up
 ```TypeScript
@@ -14,7 +52,7 @@ Request DTO {
 }
 status {
   201 - Created;
-  400 - Bad Request: 'Incorrect password' | 'Incorrect username' | 'Incorrect email' | 'Email already in use';
+  400 - Bad Request: 'Incorrect password format' | 'Incorrect username format' | 'Incorrect email format' | 'Email already in use';
 }
 ```
 
@@ -30,7 +68,8 @@ Response DTO {
 }
 status {
   200 - OK;
-  400 - Bad Request: 'Incorrect password' | 'Incorrect email';
+  400 - Bad Request: 'Incorrect email';
+  401 - Unauthorized: 'Incorrect password';
 }
 ```
 
@@ -63,7 +102,7 @@ Request DTO {
 }
 Response DTO:
 {
-  gameId: number,
+  game: Game,
 }
 status {
   201 - Created;
@@ -98,10 +137,10 @@ status {
 ```
 
 ### Изменить настройки игры (для admin)
-PATCH api/v1/games/:gameId
+PATCH api/v1/games/digits-number/:gameId
 ```TypeScript
 Request DTO {
-  answerLength: number,
+  game: Game,
 }
 
 status {
@@ -111,13 +150,13 @@ status {
   403 -	Forbidden: 'Only for admin';
   404 - Not Found: 'Game not found'
 }
-
 ```
+
 ### Загадать число
-PATCH api/v1/games/:gameId
+POST api/v1/games/:gameId/hidden
 ```TypeScript
 Request DTO {
-  answer: number,
+  hiddenNumber: number,
 }
 
 status {
@@ -149,7 +188,7 @@ GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
   -Фильтрация
     filter: 'usersId' | 'status',
       usersId: number[],
-      status: boolean,
+      status: 'created' | 'started' | 'finished',
 
   -Соритровка
     sort[type]: 'asc' | 'desc' | 'none',
@@ -161,7 +200,7 @@ GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
 
 Response DTO:
 {
-  countGames: number,
+  totalCount: number,
   games: Game[],
 }
 
@@ -187,10 +226,11 @@ status {
 ```
 
 ### Поcмотреть leaderboard
-GET api/v1/leaderboard?sort=:criterion&from=:date&to:=date&offset=:offset&limit=:limit
+GET api/v1/leaderboard?sort=:sortBy&from=:date&to:=date&offset=:offset&limit=:limit
 ```TypeScript
   -Сортировка(критерии)
-    criterion: 'countWins' | 'countCompleted' | 'countStepsToWin',
+    sortBy: 'countWins' | 'countCompleted' | 'countStepsToWin',
+    sortDirection: 'asc',
 
   -Промежуток
     from: date,
@@ -202,9 +242,10 @@ GET api/v1/leaderboard?sort=:criterion&from=:date&to:=date&offset=:offset&limit=
 
 Response DTO:
 {
-  countUsers: number,
-  leadbord: User[],
+  totalCount: number,
+  stats: Stats[],
 }
+
 status {
   200 - OK;
   400 - Bad Request: 'Incorrect sort criterion' | 'Incorrect date from/to' | 'Incorrect offset/limit' ;
@@ -219,9 +260,11 @@ Request DTO {
   stepValue: number,
 }
 Response DTO {
-  bull: number,
-  cow: number;
+  bulls: number,
+  cows: number,
+  game: Game,
 }
+
 status {
   200 - OK;
   400 - Bad Request: 'You cannot make moves after the game is over' |
