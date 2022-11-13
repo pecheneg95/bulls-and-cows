@@ -8,6 +8,8 @@
   password: string,
   email: string,
   role: 'member' | 'admin',
+  createdAt: date,
+  updatedAt: date,
 }
 ```
 
@@ -22,6 +24,8 @@
   hiddenNumberByCreator: number || null, 
   hiddenNumberByOpponent: number || null, 
   hiddenNumberLength: number,
+  createdAt: date,
+  updatedAt: date,
 }
 ```
 ## 3. Step
@@ -34,6 +38,8 @@
   value: number, 
   bulls: number,
   cows: number,
+  createdAt: date,
+  updatedAt: date,
 }
 ```
 ## RELATIONS
