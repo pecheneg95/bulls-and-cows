@@ -7,9 +7,9 @@
   username: string,
   password: string,
   email: string,
-  role: 'member' | 'admin',
-  createdAt: date,
-  updatedAt: date,
+  role: 'user' | 'admin',
+  createdAt: Date,
+  updatedAt: Date,
 }
 ```
 
@@ -21,11 +21,11 @@
   opponentId: number,
   status:  'created' | 'started' | 'finished'
   winnerId: number || null,
-  hiddenNumberByCreator: number || null, 
-  hiddenNumberByOpponent: number || null, 
-  hiddenNumberLength: number,
-  createdAt: date,
-  updatedAt: date,
+  hiddenByCreator: string || null, 
+  hiddenByOpponent: string || null, 
+  hiddenLength: number,
+  createdAt: Date,
+  updatedAt: Date,
 }
 ```
 ## 3. Step
@@ -35,11 +35,11 @@
   userId: number,
   gameId: number,
   sequence: number,
-  value: number, 
+  value: string, 
   bulls: number,
   cows: number,
-  createdAt: date,
-  updatedAt: date,
+  createdAt: Date,
+  updatedAt: Date,
 }
 ```
 ## RELATIONS
