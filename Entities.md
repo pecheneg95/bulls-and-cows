@@ -7,7 +7,7 @@
   username: string,
   password: string,
   email: string,
-  role: 'user' | 'admin',
+  role: USER_ROLE,
   createdAt: Date,
   updatedAt: Date,
 }
@@ -19,8 +19,8 @@
   id: number,
   creatorId: number,
   opponentId: number,
-  status:  'created' | 'started' | 'finished'
-  winnerId: number || null,
+  status: GAME_STATUS,
+  result: GAME_RESULT || null,
   hiddenByCreator: string || null, 
   hiddenByOpponent: string || null, 
   hiddenLength: number,
@@ -39,7 +39,6 @@
   bulls: number,
   cows: number,
   createdAt: Date,
-  updatedAt: Date,
 }
 ```
 ## RELATIONS
