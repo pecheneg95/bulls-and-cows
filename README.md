@@ -6,39 +6,79 @@
 
 ### Types
 ```TypeScript
-Game DTO{
+GameDTO {
   id: number,
   creatorId: number,
   opponentId: number,
-  status:  'created' | 'started' | 'finished'
-  winnerId: number || null,
-  hiddenNumberByCreator: number || null, 
-  hiddenNumberByOpponent: number || null,
-  hiddenNumberLength: number,
+  status:  GAME_STATUS,
+  result: GAME_RESULT || null,
+  hiddenByCreator: string || null, 
+  hiddenByOpponent: string || null,
+  hiddenLength: number,
+  createdAt: Date,
+  updatedAt: Date,
   steps: Step[],
 }
 
-Step {
+StepDTO {
   id: number,
   userId: number,
   sequence: number,
-  value: number, 
+  value: string, 
+  bulls: number,
+  cows: number,
+  createdAt: Date,
 }
 
-User DTO{
+UserDTO{
   id: number,
   username: string,
   email: string.
-  role: 'member' | 'admin',
+  role: USER_ROLE,
+  createdAt: Date,
+  updatedAt: Date,
 }
 
-Stats DTO {
+StatsDTO {
   userid: number,
   username: string,
-  countGames: number,
-  countWins: number,
-  countCompleted: number,
-  countStepsToWin: number,
+  gamesCount: number,
+  winsCount: number,
+  lossesCount: number,
+  drawCount: number,
+  completedGamesCount: number,
+  averageStepsCountToWin: number,
+}
+```
+
+### ENUMS 
+```TypeScript
+enum GAME_STATUS {
+  CREATED = 'created',
+  PLAYING = 'playing',
+  FINISHED = 'finished',
+}
+
+enum GAME_RESULT {
+  CREATOR_WIN = 'creator_win',
+  OPPONENT_WIN = 'opponent_win',
+  DRAW = 'draw',
+}
+
+enum USER_ROLE {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
+enum SORT_DIRECTION {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+enum LEADERBOARD_SORT_BY {
+  WINS_COUNT_ = 'wins_count',
+  COMPLETED_GAMES_COUNT_ = 'completed_games_count',
+  AVERAGE_STEPS_COUNT_TO_WIN = 'average_steps_count_to_win',
 }
 ```
 
@@ -86,7 +126,7 @@ GET api/v1/users/me
 ```TypeScript
 Response DTO:
 {
-  user: User,
+  user: UserDTO,
 }
 status {
   200 - OK;
@@ -102,7 +142,7 @@ Request DTO {
 }
 Response DTO:
 {
-  game: Game,
+  game: GameDTO,
 }
 status {
   201 - Created;
@@ -129,6 +169,10 @@ Request DTO {
   opponentId: number,
 }
 
+Response DTO {
+  game: GameDTO,
+}
+
 status {
   200 - OK;
   400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start';
@@ -140,7 +184,7 @@ status {
 PATCH api/v1/games/digits-number/:gameId
 ```TypeScript
 Request DTO {
-  game: Game,
+  hiddenLength: number,
 }
 
 status {
@@ -156,7 +200,7 @@ status {
 POST api/v1/games/:gameId/hidden
 ```TypeScript
 Request DTO {
-  hiddenNumber: number,
+  hidden: string,
 }
 
 status {
@@ -172,7 +216,7 @@ GET api/v1/games/:gameId
 ```TypeScript
 Response DTO:
 {
-  game: Game,
+  game: GameDTO,
 }
 status {
   200 - OK;
@@ -183,16 +227,15 @@ status {
 ```
 
 ### Получить информацию о всех своих играх (с филльтрацией)
-GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
+GET api/v1/users/allgames?userIds=:userIds&status=:status&sort=:sort&offset=:offset&limit=:limit
 ```TypeScript
   -Фильтрация
-    filter: 'usersId' | 'status',
-      usersId: number[],
-      status: 'created' | 'started' | 'finished',
+    userIds?: number[],
+    status?: GAME_STATUS,
 
   -Соритровка
-    sort[type]: 'asc' | 'desc' | 'none',
-    sort[field]: сreationDate,
+    sort[type]?: SORT_DIRECTION,
+    sort[field]: 'сreationDate',
 
   -Пагинация
     offset: number,
@@ -201,12 +244,12 @@ GET api/v1/users/allgames?filter=:filter&sort=:sort&offset=:offset&limit=:limit
 Response DTO:
 {
   totalCount: number,
-  games: Game[],
+  games: GameDTO[],
 }
 
 status {
   200 - OK;
-  400 - Bad Request: 'Incorrect filter' | 'Incorrect sort type' | 'Incorrect offset/limit' ;
+  400 - Bad Request: 'Incorrect userIds' | 'Incorrect game status' | 'Incorrect sort type' | 'Incorrect offset/limit' ;
   401 - Unauthorized;
 }
 ```
@@ -216,7 +259,7 @@ GET api/v1/users/:userId/stats
 ```TypeScript
 Response DTO:
 {
-  stats: Stats,
+  stats: StatsDTO,
 }
 status {
   200 - OK;
@@ -229,12 +272,12 @@ status {
 GET api/v1/leaderboard?sort=:sortBy&from=:date&to:=date&offset=:offset&limit=:limit
 ```TypeScript
   -Сортировка(критерии)
-    sortBy: 'countWins' | 'countCompleted' | 'countStepsToWin',
+    sortBy: LEADERBOARD_SORT_BY,
     sortDirection: 'asc',
 
   -Промежуток
-    from: date,
-    to: date,
+    from?: Date,
+    to?: Date,
 
   -Пагинация
     offset: number,
@@ -243,7 +286,7 @@ GET api/v1/leaderboard?sort=:sortBy&from=:date&to:=date&offset=:offset&limit=:li
 Response DTO:
 {
   totalCount: number,
-  stats: Stats[],
+  stats: StatsDTO[],
 }
 
 status {
@@ -257,12 +300,11 @@ status {
 POST api/v1/games/:gameId/step
 ```TypeScript
 Request DTO {
-  stepValue: number,
+  stepValue: string,
 }
 Response DTO {
-  bulls: number,
-  cows: number,
-  game: Game,
+  step: StepDTO,
+  gameStatus: GAME_STATUS,
 }
 
 status {
