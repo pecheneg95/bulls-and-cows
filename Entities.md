@@ -17,8 +17,8 @@
 ```Typescript
 {
   id: number,
-  creatorId: number,
-  opponentId: number,
+  creatorId: number || null,
+  opponentId: number || null,
   status: GAME_STATUS,
   result: GAME_RESULT || null,
   hiddenByCreator: string || null, 
@@ -32,7 +32,7 @@
 ```Typescript
 {
   id: number,
-  userId: number,
+  userId: number || null,
   gameId: number,
   sequence: number,
   value: string, 
