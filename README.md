@@ -168,6 +168,10 @@ status {
 ### Изменить противника
 PATCH api/v1/games/:gameId
 ```TypeScript
+Request Body DTO {
+  opponentId: number,
+}
+
 Request Param DTO {
   gameId: number,
 }
