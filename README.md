@@ -6,12 +6,12 @@
 
 ### Types
 ```TypeScript
-GameDTO {
+Game {
   id: number,
   creatorId: number,
   opponentId: number,
   status:  GAME_STATUS,
-  result: GAME_RESULT || null,
+  winnerId: number || null,
   hiddenByCreator: string || null, 
   hiddenByOpponent: string || null,
   hiddenLength: number,
@@ -19,6 +19,8 @@ GameDTO {
   updatedAt: Date,
   steps: Step[],
 }
+
+GameDTO = Omit<Game, 'hiddenByCreator' | 'hiddenByOpponent'>
 
 StepDTO {
   id: number,
@@ -59,12 +61,6 @@ enum GAME_STATUS {
   FINISHED = 'finished',
 }
 
-enum GAME_RESULT {
-  CREATOR_WIN = 'creator_win',
-  OPPONENT_WIN = 'opponent_win',
-  DRAW = 'draw',
-}
-
 enum USER_ROLE {
   ADMIN = 'admin',
   USER = 'user',
@@ -85,11 +81,12 @@ enum LEADERBOARD_SORT_BY {
 ### Sign-up
 POST api/v1/auth/sign-up
 ```TypeScript
-Request DTO {
+Request Body DTO {
   username: string,
   password: string,
   email: string,
 }
+
 status {
   201 - Created;
   400 - Bad Request: 'Incorrect password format' | 'Incorrect username format' | 'Incorrect email format' | 'Email already in use';
@@ -99,13 +96,15 @@ status {
 ### Login
 POST api/v1/auth/login
 ```TypeScript
-Request DTO {
+Request Body DTO {
   password: string,
   email: string,
 }
+
 Response DTO {
   token: string,
 }
+
 status {
   200 - OK;
   400 - Bad Request: 'Incorrect email';
@@ -125,9 +124,8 @@ status {
 GET api/v1/users/me
 ```TypeScript
 Response DTO:
-{
-  user: UserDTO,
-}
+UserDTO
+
 status {
   200 - OK;
   401 - Unauthorized;
@@ -137,13 +135,13 @@ status {
 ### Создать игру
 POST api/v1/games
 ```TypeScript
-Request DTO {
+Request Body DTO {
   opponentId: number,
 }
+
 Response DTO:
-{
-  game: GameDTO,
-}
+GameDTO
+
 status {
   201 - Created;
   400 - Bad Request: 'Game with this user is already created' | 'Opponent not found';
@@ -154,10 +152,15 @@ status {
 ### Отменить игру (удалить)
 DELETE api/v1/games/:gameId
 ```TypeScript
+Request Param DTO {
+  gameId: number,
+}
+
 status {
   200 - Created;
   400 - Bad Request: 'You cannot delete game after game start';
   401 - Unauthorized;
+  403 -	Forbidden: 'You are not a member of this game';
   404 - Not Found: 'Game not found'
 }
 ```
@@ -165,17 +168,18 @@ status {
 ### Изменить противника
 PATCH api/v1/games/:gameId
 ```TypeScript
-Request DTO {
-  opponentId: number,
+Request Param DTO {
+  gameId: number,
 }
 
-Response DTO {
-  game: GameDTO,
-}
+Response DTO: 
+GameDTO
+
 
 status {
   200 - OK;
   400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start';
+  403 -	Forbidden: 'You are not a member of this game';
   401 - Unauthorized;
 }
 ```
@@ -183,6 +187,10 @@ status {
 ### Изменить настройки игры (для admin)
 PATCH api/v1/games/digits-number/:gameId
 ```TypeScript
+Request Param DTO {
+  gameId: number,
+}
+
 Request DTO {
   hiddenLength: number,
 }
@@ -199,14 +207,23 @@ status {
 ### Загадать число
 POST api/v1/games/:gameId/hidden
 ```TypeScript
-Request DTO {
+Request Param DTO {
+  gameId: number,
+}
+
+Request Body DTO {
   hidden: string,
 }
+
+Response DTO:
+GameDTO
+
 
 status {
   200 - OK;
   400 - Bad Request: 'You cannot change answer after game start' | 'Incorrect answer length';
   401 - Unauthorized;
+  403 -	Forbidden: 'You are not a member of this game';
   404 - Not Found: 'Game not found'
 }
 ```
@@ -214,10 +231,13 @@ status {
 ### Получить информацию об игре
 GET api/v1/games/:gameId
 ```TypeScript
-Response DTO:
-{
-  game: GameDTO,
+Request Param DTO {
+  gameId: number,
 }
+
+Response DTO:
+GameDTO
+
 status {
   200 - OK;
   401 - Unauthorized;
@@ -227,24 +247,21 @@ status {
 ```
 
 ### Получить информацию о всех своих играх (с филльтрацией)
-GET api/v1/users/allgames?userIds=:userIds&status=:status&sort=:sort&offset=:offset&limit=:limit
+GET api/v1/games
 ```TypeScript
-  -Фильтрация
-    userIds?: number[],
-    status?: GAME_STATUS,
-
-  -Соритровка
-    sort[type]?: SORT_DIRECTION,
-    sort[field]: 'сreationDate',
-
-  -Пагинация
-    offset: number,
-    limit: number,
+Request Query DTO {
+  gameIds?: number[],
+  status?: GAME_STATUS,
+  sort[type]?: SORT_DIRECTION,
+  sort[field]: 'сreationDate',
+  offset: number,
+  limit: number,
+}
 
 Response DTO:
 {
   totalCount: number,
-  games: GameDTO[],
+  games: GameForUserDTO[],
 }
 
 status {
@@ -257,10 +274,13 @@ status {
 ### Получить статистику о чужих играх
 GET api/v1/users/:userId/stats
 ```TypeScript
-Response DTO:
-{
-  stats: StatsDTO,
+Request Param DTO {
+  userId: number,
 }
+
+Response DTO:
+StatsDTO
+
 status {
   200 - OK;
   401 - Unauthorized;
@@ -269,20 +289,16 @@ status {
 ```
 
 ### Поcмотреть leaderboard
-GET api/v1/leaderboard?sort=:sortBy&from=:date&to:=date&offset=:offset&limit=:limit
+GET api/v1/leaderboard
 ```TypeScript
-  -Сортировка(критерии)
-    sortBy: LEADERBOARD_SORT_BY,
-    sortDirection: 'asc',
-
-  -Промежуток
-    from?: Date,
-    to?: Date,
-
-  -Пагинация
-    offset: number,
-    limit: number,
-
+Request Query DTO {
+  sort[field]: LEADERBOARD_SORT_BY,
+  sort[type]: 'asc',
+  from?: Date,
+  to?: Date,
+  offset: number,
+  limit: number,
+}
 Response DTO:
 {
   totalCount: number,
@@ -299,7 +315,11 @@ status {
 ### Сделать ход
 POST api/v1/games/:gameId/step
 ```TypeScript
-Request DTO {
+Request Param DTO {
+  gameId: number,
+}
+
+Request Body DTO {
   stepValue: string,
 }
 Response DTO {
