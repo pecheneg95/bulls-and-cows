@@ -195,7 +195,7 @@ Request Param DTO {
   gameId: number,
 }
 
-Request DTO {
+Request Body DTO {
   hiddenLength: number,
 }
 
