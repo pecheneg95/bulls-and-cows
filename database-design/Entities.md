@@ -20,7 +20,7 @@
   creatorId: number,
   opponentId: number,
   status: GAME_STATUS,
-  winnerId: number || null,
+  winnerId: number | null,
   hiddenByCreator: string || null, 
   hiddenByOpponent: string || null, 
   hiddenLength: number,
