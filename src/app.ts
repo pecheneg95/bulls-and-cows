@@ -1,24 +1,11 @@
-import express from 'express';
-
-import { mountRouter as mountAuthRouter } from './auth/auth.router';
-import { mountRouter as mountUsersRouter } from './users/users.router';
-import { mountRouter as mountGamesRouter } from './games/games.router';
-
+const express = require('express');
 const app = express();
+const port = 3000;
 
-app.use(express.json());
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
-mountAuthRouter(app);
-mountUsersRouter(app);
-mountGamesRouter(app);
-
-async function init(): Promise<void> {
-  try {
-    app.listen(8080, () => console.log('Listening 8080'));
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
-  }
-}
-
-init();
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
