@@ -76,6 +76,10 @@ enum LEADERBOARD_SORT_BY {
   COMPLETED_GAMES_COUNT_ = 'completed_games_count',
   AVERAGE_STEPS_COUNT_TO_WIN = 'average_steps_count_to_win',
 }
+
+enum GAME_SORT_BY {
+  CREATION_DATE = 'сreation_date',
+}
 ```
 
 ### Sign-up
@@ -85,6 +89,10 @@ Request Body DTO {
   username: string,
   password: string,
   email: string,
+}
+
+Response DTO {
+  token: string,
 }
 
 status {
@@ -257,7 +265,7 @@ Request Query DTO {
   gameIds?: number[],
   status?: GAME_STATUS,
   sort[type]?: SORT_DIRECTION,
-  sort[field]: 'сreationDate',
+  sort[field]: GAME_SORT_BY,
   offset: number,
   limit: number,
 }
@@ -265,7 +273,7 @@ Request Query DTO {
 Response DTO:
 {
   totalCount: number,
-  games: GameForUserDTO[],
+  games: GameDTO[],
 }
 
 status {
@@ -297,7 +305,7 @@ GET api/v1/leaderboard
 ```TypeScript
 Request Query DTO {
   sort[field]: LEADERBOARD_SORT_BY,
-  sort[type]: 'asc',
+  sort[type]: SORT_DIRECTION,
   from?: Date,
   to?: Date,
   offset: number,
