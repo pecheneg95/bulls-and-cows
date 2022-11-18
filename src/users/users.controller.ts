@@ -2,29 +2,30 @@ import { NextFunction, Request, Response } from 'express';
 import { USER_ROLE } from './users.constants';
 
 export class UsersController {
-  static meGet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const UserDTO = {
-        id: 1,
+      const userId = req.params.userId;
+
+      const userDTO = {
+        id: userId,
         username: "Artyom",
         email: "artyom@email.com",
         role: USER_ROLE.USER,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-      res.status(200).json(UserDTO);
+      console.log(userDTO)
+      res.status(200).json(userDTO);
     } catch (error) {
       next(error);
     }
   };
 
-  static statsGet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static stats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.params.userId;
 
-      console.log("UserId: ", userId);
-
-      const StatsDTO = {
+      const statsDTO = {
         userid: userId,
         username: "Artyom",
         gamesCount: 5,
@@ -34,8 +35,8 @@ export class UsersController {
         completedGamesCount: 5,
         averageStepsCountToWin: 20,
       }
-
-      res.status(200).json(StatsDTO);
+      console.log(statsDTO)
+      res.status(200).json(statsDTO);
     } catch (error) {
       next(error);
     }
