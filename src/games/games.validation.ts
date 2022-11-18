@@ -1,7 +1,8 @@
 import { body, param, query } from 'express-validator';
+import { Game } from './games.repository';
 
 export class GamesValidation {
-  static allGame = [
+  static allMyGame = [
     query('gameId').notEmpty().isInt().custom((value) => value >= 0),
     query('status').isNumeric(),
     query('sort').isNumeric(),
@@ -27,6 +28,18 @@ export class GamesValidation {
   ];
 
   static changeOpponent = [
+    param('gameId').notEmpty().isInt().custom((value) => value >= 0),
+    body('opponentId').notEmpty().isInt().custom((value) => value >= 0)
+  ];
+
+  static infoAboutGame = [
     param('gameId').notEmpty().isInt().custom((value) => value >= 0)
+  ];
+
+  static getHiddenLength = () => Game.hiddenLength;
+
+  static hidden = [
+    param('gameId').notEmpty().isInt().custom((value) => value >= 0),
+    body('hidden').notEmpty().isString().trim().custom((value) => value.length === new Set(value.split('')).size).isLength({ min: GamesValidation.getHiddenLength(), max: GamesValidation.getHiddenLength(), })
   ];
 }
