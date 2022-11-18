@@ -4,10 +4,13 @@ enum GAME_STATUS {
   FINISHED = 'finished',
 }
 
-enum GAME_RESULT {
-  CREATOR_WIN = 'creator_win',
-  OPPONENT_WIN = 'opponent_win',
-  DRAW = 'draw',
+enum GAME_SORT_BY {
+  CREATION_DATE = 'сreation_date',
 }
 
-export { GAME_STATUS, GAME_RESULT };
+enum SORT_DIRECTION {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+export { GAME_STATUS , GAME_SORT_BY, SORT_DIRECTION };
