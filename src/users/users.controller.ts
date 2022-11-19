@@ -4,9 +4,9 @@ import { NextFunction, Request, Response } from 'express';
 export class UsersController {
   static me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log("Info about me")
+      console.log('Info about me');
 
-      res.status(200).json("Info about me");
+      res.status(200).json('Info about me');
     } catch (error) {
       next(error);
     }
@@ -16,7 +16,7 @@ export class UsersController {
     try {
       const userId = req.params.userId;
 
-      console.log("userId: ", userId)
+      console.log('userId: ', userId);
 
       res.status(200).json(userId);
     } catch (error) {

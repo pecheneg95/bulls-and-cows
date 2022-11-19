@@ -23,9 +23,6 @@
       "@users": [
         "users"
       ],
-      "@games": [
-        "games"
-      ],
       "@errors": [
         "errors"
       ],
