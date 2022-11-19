@@ -5,6 +5,7 @@
 ## API
 
 ### Types
+
 ```TypeScript
 Game {
   id: number,
@@ -12,7 +13,7 @@ Game {
   opponentId: number,
   status:  GAME_STATUS,
   winnerId: number || null,
-  hiddenByCreator: string || null, 
+  hiddenByCreator: string || null,
   hiddenByOpponent: string || null,
   hiddenLength: number,
   createdAt: Date,
@@ -26,7 +27,7 @@ StepDTO {
   id: number,
   userId: number,
   sequence: number,
-  value: string, 
+  value: string,
   bulls: number,
   cows: number,
   createdAt: Date,
@@ -53,7 +54,8 @@ StatsDTO {
 }
 ```
 
-### ENUMS 
+### ENUMS
+
 ```TypeScript
 enum GAME_STATUS {
   CREATED = 'created',
@@ -83,7 +85,9 @@ enum GAME_SORT_BY {
 ```
 
 ### Sign-up
+
 POST api/v1/auth/sign-up
+
 ```TypeScript
 Request Body DTO {
   username: string,
@@ -102,7 +106,9 @@ status {
 ```
 
 ### Login
+
 POST api/v1/auth/login
+
 ```TypeScript
 Request Body DTO {
   password: string,
@@ -121,7 +127,9 @@ status {
 ```
 
 ### Logout
+
 POST api/v1/auth/logout
+
 ```TypeScript
 status {
   200 - OK;
@@ -129,7 +137,9 @@ status {
 ```
 
 ### Получить данные о себе
+
 GET api/v1/users/me
+
 ```TypeScript
 Response DTO:
 UserDTO
@@ -141,7 +151,9 @@ status {
 ```
 
 ### Создать игру
+
 POST api/v1/games
+
 ```TypeScript
 Request Body DTO {
   opponentId: number,
@@ -158,7 +170,9 @@ status {
 ```
 
 ### Отменить игру (удалить)
+
 DELETE api/v1/games/:gameId
+
 ```TypeScript
 Request Param DTO {
   gameId: number,
@@ -174,7 +188,9 @@ status {
 ```
 
 ### Изменить противника
+
 PATCH api/v1/games/:gameId
+
 ```TypeScript
 Request Body DTO {
   opponentId: number,
@@ -184,7 +200,7 @@ Request Param DTO {
   gameId: number,
 }
 
-Response DTO: 
+Response DTO:
 GameDTO
 
 
@@ -197,7 +213,9 @@ status {
 ```
 
 ### Изменить настройки игры (для admin)
+
 PATCH api/v1/games/digits-number/:gameId
+
 ```TypeScript
 Request Param DTO {
   gameId: number,
@@ -217,7 +235,9 @@ status {
 ```
 
 ### Загадать число
+
 POST api/v1/games/:gameId/hidden
+
 ```TypeScript
 Request Param DTO {
   gameId: number,
@@ -241,7 +261,9 @@ status {
 ```
 
 ### Получить информацию об игре
+
 GET api/v1/games/:gameId
+
 ```TypeScript
 Request Param DTO {
   gameId: number,
@@ -259,10 +281,12 @@ status {
 ```
 
 ### Получить информацию о всех своих играх (с филльтрацией)
+
 GET api/v1/games
+
 ```TypeScript
 Request Query DTO {
-  gameIds?: number[],
+  userIds?: number[],
   status?: GAME_STATUS,
   sort[type]?: SORT_DIRECTION,
   sort[field]: GAME_SORT_BY,
@@ -284,7 +308,9 @@ status {
 ```
 
 ### Получить статистику о чужих играх
+
 GET api/v1/users/:userId/stats
+
 ```TypeScript
 Request Param DTO {
   userId: number,
@@ -301,13 +327,15 @@ status {
 ```
 
 ### Поcмотреть leaderboard
+
 GET api/v1/leaderboard
+
 ```TypeScript
 Request Query DTO {
   sort[field]: LEADERBOARD_SORT_BY,
   sort[type]: SORT_DIRECTION,
-  from?: Date,
-  to?: Date,
+  from?: Date, //  format: 'YYYY/MM/DD'
+  to?: Date, //  format: 'YYYY/MM/DD'
   offset: number,
   limit: number,
 }
@@ -325,7 +353,9 @@ status {
 ```
 
 ### Сделать ход
+
 POST api/v1/games/:gameId/step
+
 ```TypeScript
 Request Param DTO {
   gameId: number,
@@ -343,7 +373,7 @@ status {
   200 - OK;
   400 - Bad Request: 'You cannot make moves after the game is over' |
                      'You cannot make multiple moves' |
-                     'You cannot make a move until all participants have guessed a number.' | 
+                     'You cannot make a move until all participants have guessed a number.' |
                      'Incorrect answer length';
   401 - Unauthorized;
   403 -	Forbidden: 'You are not a member of this game';

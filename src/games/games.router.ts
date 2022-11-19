@@ -16,9 +16,14 @@ router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, Gam
 router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame); // Отменить игру (удалить)
 
 router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.hidden); // Загадать число
-router.post('/:gameId/step', validatePayload, GamesController.step); // Сделать ход
+router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.step); // Сделать ход
 
-router.patch('digits-number/:gameId', validatePayload, GamesController.changeSettings); // Изменить настройки игры (для admin)
+router.patch(
+  'digits-number/:gameId',
+  ...GamesValidation.changeSettings,
+  validatePayload,
+  GamesController.changeSettings
+); // Изменить настройки игры (для admin)
 
 export function mountRouter(app: Application): void {
   app.use('/games', router);
