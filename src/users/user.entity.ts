@@ -32,7 +32,7 @@ export class User extends BaseEntity {
     type: 'enum',
     enum: USER_ROLE,
   })
-  role!: USER_ROLE;
+  role!: string;
 
   @CreateDateColumn()
   createdAt!: Date;
