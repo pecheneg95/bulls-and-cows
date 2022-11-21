@@ -101,7 +101,8 @@ Response DTO {
 
 status {
   201 - Created;
-  400 - Bad Request: 'Incorrect password format' | 'Incorrect username format' | 'Incorrect email format' | 'Email already in use';
+  400 - Bad Request: 'Incorrect username format' | 'Incorrect password format' | 'Incorrect email format';
+  422 - Unprocessable Entity: 'Email already in use';
 }
 ```
 

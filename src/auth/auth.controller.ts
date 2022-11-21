@@ -1,14 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { authService } from './auth.service';
+
 export class AuthController {
   static signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password, username } = req.body;
+      const { username, password, email } = req.body;
 
-      console.log('Username: ', username);
-      console.log('Email: ', email);
-      console.log('Password: ', password);
-      console.log('User has been created');
+      await authService.signUp(username, password, email);
 
       res.status(201).json({
         message: 'User has been created',
@@ -20,11 +19,9 @@ export class AuthController {
 
   static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password } = req.body;
+      const { password, email } = req.body;
 
-      console.log('Email: ', email);
-      console.log('Password: ', password);
-      console.log('Authentification succeeded.');
+      await authService.login(password, email);
 
       res.status(200).json({
         message: 'Authentification succeeded.',
