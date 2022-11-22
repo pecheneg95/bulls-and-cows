@@ -6,7 +6,10 @@ export class UsersController {
     try {
       console.log('Info about me');
 
-      res.status(200).json('Info about me');
+      res.status(200).json({
+        message: 'Info about me',
+        role: req.role,
+      });
     } catch (error) {
       next(error);
     }
