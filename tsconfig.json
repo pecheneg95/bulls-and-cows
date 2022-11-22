@@ -19,15 +19,28 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ],
     "paths": {
       "@users": [
         "users"
+      ],
+      "@games": [
+        "games"
+      ],
+      "@steps": [
+        "steps"
       ],
       "@errors": [
         "errors"
       ],
       "@middleware": [
         "middleware"
+      ],
+      "@auth": [
+        "auth"
       ],
     }
   },

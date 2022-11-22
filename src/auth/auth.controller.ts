@@ -21,10 +21,11 @@ export class AuthController {
     try {
       const { password, email } = req.body;
 
-      await authService.login(password, email);
+      const auth = await authService.login(password, email);
 
       res.status(200).json({
         message: 'Authentification succeeded.',
+        token: auth.token,
       });
     } catch (error) {
       next(error);
