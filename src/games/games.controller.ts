@@ -4,11 +4,11 @@ export class GamesController {
   static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userIds = req.query.userIds;
-      console.log('Get all me games');
+      console.log('Get all my games');
       if (userIds) {
         res.status(200).json(userIds);
       } else {
-        res.status(200).json('Get all me games');
+        res.status(200).json('Get all my games');
       }
     } catch (error) {
       next(error);
