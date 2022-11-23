@@ -8,9 +8,9 @@ import { GamesController, GamesValidation } from '@games';
 const router = express.Router();
 
 router.get('/', ...GamesValidation.allMyGame, validatePayload, GamesController.getAllMyGames); // Получить информацию о всех своих играх (с филльтрацией)
-router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame); // Создать игру
+router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame); // Создать игру +++
 
-router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.infoAboutGame); // Получить информацию об игре
+router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.infoAboutGame); // Получить информацию об игре +++
 router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent); // Изменить противника
 router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame); // Отменить игру (удалить)
 

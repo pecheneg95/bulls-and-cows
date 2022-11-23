@@ -1,7 +1,8 @@
 import { AppError } from '@errors';
 import { NextFunction, Request, Response } from 'express';
+import { creatorGame, opponentGame } from 'types/game.types';
 import { UsersService } from 'users/users.service';
-
+//import { creatorGame, opponentGame } from '../types/game.types';
 import { GamesService } from './games.service';
 
 export class GamesController {
@@ -49,11 +50,48 @@ export class GamesController {
 
   static infoAboutGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const gameId = req.params.gameId;
-
+      const userId = req.userId as number;
+      const gameId = Number(req.params.gameId);
       console.log('gameId: ', gameId);
 
-      res.status(200).json(gameId);
+      const game = await GamesService.findById(gameId);
+      if (!game) {
+        throw new AppError('Game not found', 404);
+      }
+      const isMember = await GamesService.isMember(gameId, userId);
+      if (!isMember) {
+        throw new AppError('You are not a member of this game', 403);
+      }
+
+      if (game.creatorId === userId) {
+        const gameForCreator: creatorGame = {
+          id: game.id,
+          creatorId: game.creatorId,
+          opponentId: game.opponentId,
+          status: game.status,
+          winnerId: game.winnerId,
+          hiddenByCreator: game.hiddenByCreator,
+          hiddenLength: game.hiddenLength,
+          createdAt: game.createdAt,
+          updatedAt: game.updatedAt,
+          steps: game.steps,
+        };
+        res.status(200).json(gameForCreator);
+      } else {
+        const gameForOpponent: opponentGame = {
+          id: game.id,
+          creatorId: game.creatorId,
+          opponentId: game.opponentId,
+          status: game.status,
+          winnerId: game.winnerId,
+          hiddenByOpponent: game.hiddenByOpponent,
+          hiddenLength: game.hiddenLength,
+          createdAt: game.createdAt,
+          updatedAt: game.updatedAt,
+          steps: game.steps,
+        };
+        res.status(200).json(gameForOpponent);
+      }
     } catch (error) {
       next(error);
     }

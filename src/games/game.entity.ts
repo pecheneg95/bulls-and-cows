@@ -30,7 +30,7 @@ export class Game extends BaseEntity {
     enum: GAME_STATUS,
     default: GAME_STATUS.CREATED,
   })
-  status!: string;
+  status!: GAME_STATUS;
 
   @Column({ default: null, nullable: true })
   winnerId!: number;
