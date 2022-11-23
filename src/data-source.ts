@@ -1,8 +1,8 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { User } from './users/user.entity';
-import { Game } from './games/game.entity';
-import { Step } from './steps/step.entity';
+import { User } from '@users';
+import { Game } from '@games';
+import { Step } from '@steps';
 //import * as Migrations from './migrations';
 dotenv.config();
 
@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   username: 'postgres',
   //password: process.env.DB_PASSWORD,
   password: 'root',
-  database: 'postgres',
+  database: 'bulls_and_cows',
   synchronize: true,
   // synchronize: false,
   logging: true,

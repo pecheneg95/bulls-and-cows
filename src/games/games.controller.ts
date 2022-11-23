@@ -1,4 +1,8 @@
+import { AppError } from '@errors';
 import { NextFunction, Request, Response } from 'express';
+import { UsersService } from 'users/users.service';
+
+import { GamesService } from './games.service';
 
 export class GamesController {
   static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -17,11 +21,27 @@ export class GamesController {
 
   static createGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const opponentId = req.body.opponentId;
+      const opponentId = req.body.opponentId as number;
+      const creatorId = req.userId as number;
 
-      console.log('opponentId: ', opponentId);
+      if (creatorId === opponentId) {
+        throw new AppError('You can not create a game with yourself', 400);
+      }
 
-      res.status(200).json(opponentId);
+      const opponent = await UsersService.findById(opponentId);
+
+      if (opponent === null) {
+        throw new AppError('Opponent not found', 400);
+      }
+
+      const conflict = await GamesService.findUnfinishedGameForTwoUsers(creatorId, opponentId);
+
+      if (conflict) {
+        throw new AppError('Game with this user is already created', 400);
+      }
+
+      const game = await GamesService.createGame(creatorId, opponentId);
+      res.status(200).json(game);
     } catch (error) {
       next(error);
     }

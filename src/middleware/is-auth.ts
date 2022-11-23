@@ -19,7 +19,7 @@ export function isAuth(req: Request, res: Response, next: NextFunction): void {
 
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError && error.message === 'invalid signature') {
+    if (error instanceof jwt.JsonWebTokenError && error.message === ('invalid signature' || 'jwt malformed')) {
       next(new AppError('Authorization failed', 401));
       return;
     }
