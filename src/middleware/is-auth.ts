@@ -19,9 +19,11 @@ export function isAuth(req: Request, res: Response, next: NextFunction): void {
 
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError && error.message === ('invalid signature' || 'jwt malformed')) {
-      next(new AppError('Authorization failed', 401));
-      return;
+    if (error instanceof jwt.JsonWebTokenError && error.message === 'invalid signature') {
+      return next(new AppError('Invalid authorization token', 401));
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      return next(new AppError('Authorization token expired', 401));
     }
     next(error);
   }

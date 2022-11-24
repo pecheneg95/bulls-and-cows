@@ -1,22 +1,7 @@
-import { GAME_STATUS } from '@games';
-import { Step } from '@steps';
+import { Game } from '@games';
 
-type Game = {
-  id: number;
-  creatorId: number;
-  opponentId: number;
-  status: GAME_STATUS;
-  winnerId: number | null;
-  hiddenByCreator: string | null;
-  hiddenByOpponent: string | null;
-  hiddenLength: number;
-  createdAt: Date;
-  updatedAt: Date;
-  steps: Step[];
-};
+type GameForCreator = Omit<Game, 'hiddenByOpponent'>;
 
-type creatorGame = Omit<Game, 'hiddenByOpponent'>;
+type GameForOpponent = Omit<Game, 'hiddenByCreator'>;
 
-type opponentGame = Omit<Game, 'hiddenByCreator'>;
-
-export { creatorGame, opponentGame };
+export { GameForCreator, GameForOpponent };

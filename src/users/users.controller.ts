@@ -1,4 +1,7 @@
+import { AppError } from '@errors';
+import { User } from '@users';
 import { NextFunction, Request, Response } from 'express';
+import usersRepository from './users.repository';
 //import { USER_ROLE } from './users.constants';
 
 export class UsersController {
@@ -25,5 +28,14 @@ export class UsersController {
     } catch (error) {
       next(error);
     }
+  };
+
+  static findUser = async (userId: number): Promise<User> => {
+    const user = await usersRepository.findById(userId);
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    return user;
   };
 }

@@ -207,7 +207,7 @@ GameDTO
 
 status {
   200 - OK;
-  400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start';
+  400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start' | 'You cannot choose yourself as an opponent';
   403 -	Forbidden: 'You are not a member of this game';
   401 - Unauthorized;
 }

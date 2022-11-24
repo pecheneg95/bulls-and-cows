@@ -15,7 +15,7 @@ class UsersRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return await User.findOneBy({ email });
+    return User.findOneBy({ email });
   }
 
   async findById(id: number): Promise<User | null> {
