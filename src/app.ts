@@ -1,9 +1,8 @@
 import express from 'express';
 
 import { mountRouter as mountAuthRouter } from './auth/auth.router';
-import { mountRouter as mountUesrsRouter } from './users/users.router';
+import { mountRouter as mountUsersRouter } from './users/users.router';
 import { mountRouter as mountGamesRouter } from './games/games.router';
-import { mountRouter as mountLeaderboaedRouter } from './leaderboard/leaderboard.router';
 import { AppDataSource } from './data-source';
 import { logRequest, processError, processNotFoundEndpoint } from '@middleware';
 
@@ -14,9 +13,8 @@ app.use(express.json());
 app.use(logRequest);
 
 mountAuthRouter(app);
-mountUesrsRouter(app);
+mountUsersRouter(app);
 mountGamesRouter(app);
-mountLeaderboaedRouter(app);
 
 app.use(processNotFoundEndpoint);
 app.use(processError);

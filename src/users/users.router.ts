@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.get('/me', UsersController.me);
 router.get('/:userId/stats', ...UsersValidation.stats, validatePayload, UsersController.stats);
+router.get('/leaderboard', ...UsersValidation.leaderboard, validatePayload, UsersController.getLeaderboard); // Поcмотреть leaderboard
 
 export function mountRouter(app: Application): void {
   app.use('/users', isAuth, router);

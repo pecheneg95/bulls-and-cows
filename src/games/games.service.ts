@@ -1,11 +1,62 @@
 //import { AppError } from '@errors';
 import { AppError } from '@errors';
+import { User } from '@users';
 import GamesRepository from 'games/games.repository';
 import { GameForCreator, GameForOpponent } from 'types/game.types';
+import { Stats } from 'types/user.types';
 import { Game } from './game.entity';
 import { GAME_STATUS } from './games.constants';
 
 export class GamesService {
+  static async calculateUserStatistics(user: User, from?: Date, to?: Date): Promise<Stats> {
+    const userGames = await GamesService.getAllGamesForUser(user.id, from, to);
+    let stats: Stats = {
+      userid: 0,
+      username: '',
+      gamesCount: 0,
+      winsCount: 0,
+      lossesCount: 0,
+      drawCount: 0,
+      completedGamesCount: 0,
+      averageStepsCountToWin: 0,
+    };
+    if (!userGames) {
+      stats = {
+        userid: user.id,
+        username: user.username,
+        gamesCount: 0,
+        winsCount: 0,
+        lossesCount: 0,
+        drawCount: 0,
+        completedGamesCount: 0,
+        averageStepsCountToWin: 0,
+      };
+      return stats;
+    }
+
+    const winsGames = userGames.filter((el) => el.status === GAME_STATUS.FINISHED && el.winnerId === user.id);
+    const winsCount = winsGames.length;
+    const lossesCount = userGames.filter(
+      (el) => el.status === GAME_STATUS.FINISHED && el.winnerId !== user.id && el.winnerId !== null
+    ).length;
+    const drawCount = userGames.filter((el) => el.status === GAME_STATUS.FINISHED && el.winnerId === null).length;
+    const completedGamesCount = userGames.filter((el) => el.status === GAME_STATUS.FINISHED).length;
+    /* const averageStepsCountToWin =
+      winsGames.reduce((el) => el.steps.filter((el) => el.userId === userId).length) / winsGames.length;*/
+    stats = {
+      userid: user.id,
+      username: user.username,
+      gamesCount: userGames.length,
+      winsCount: winsCount,
+      lossesCount: lossesCount,
+      drawCount: drawCount,
+      completedGamesCount: completedGamesCount,
+      averageStepsCountToWin: 0,
+    };
+
+    return stats;
+  }
+
   static async getAllGamesWithParams(
     userId: number,
     userIds: number[] | null,
@@ -36,6 +87,14 @@ export class GamesService {
       };
     }
   }
+
+  static async getAllGamesForUser(userId: number, from?: Date, to?: Date): Promise<Game[] | null> {
+    if (from && to) {
+      return GamesRepository.findByUserIdWithDate(userId, from, to);
+    }
+    return GamesRepository.findByUserId(userId);
+  }
+
   static async changeSettings(game: Game, hiddenLength: number): Promise<Game> {
     return GamesRepository.changeSettings(game, hiddenLength);
   }

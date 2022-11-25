@@ -4,10 +4,11 @@ import { USER_ROLE } from '@users';
 
 export function isAdmin(req: Request, res: Response, next: NextFunction): void {
   try {
-    const role = req.role;
+    const role = String(req.role);
 
-    if (role !== USER_ROLE.ADMIN) throw new AppError('Only for admin', 403);
-
+    if (role !== USER_ROLE.ADMIN) {
+      throw new AppError('Only for admin', 403);
+    }
     next();
   } catch (error) {
     next(error);

@@ -1,4 +1,4 @@
-import { In, Not } from 'typeorm';
+import { Between, In, Not } from 'typeorm';
 import { Game } from './game.entity';
 import { GAME_STATUS } from './games.constants';
 
@@ -81,6 +81,17 @@ class GamesRepository {
 
   async findById(id: number): Promise<Game | null> {
     return Game.findOneBy({ id });
+  }
+  async findByUserId(userId: number): Promise<Game[] | null> {
+    return Game.find({ where: [{ creatorId: userId }, { opponentId: userId }] });
+  }
+  async findByUserIdWithDate(userId: number, from: Date, to: Date): Promise<Game[] | null> {
+    return Game.find({
+      where: [
+        { creatorId: userId, createdAt: Between(from, to) },
+        { opponentId: userId, createdAt: Between(from, to) },
+      ],
+    });
   }
 
   async findUnfinishedGameForTwoUsers(firstUserId: number, secondUserId: number): Promise<Game | null> {

@@ -2,6 +2,9 @@ import { User } from './user.entity';
 import { USER_ROLE } from './users.constants';
 
 class UsersRepository {
+  findAll(): Promise<User[] | null> {
+    return User.find();
+  }
   async create(username: string, password: string, email: string): Promise<User> {
     let user = User.create({
       username,

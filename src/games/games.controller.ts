@@ -5,7 +5,8 @@ import { GAME_STATUS } from './games.constants';
 import { GamesService } from './games.service';
 
 export class GamesController {
-  static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static allMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    console.log('allMyGames');
     try {
       console.log('Get all me games');
       const userId = Number(req.userId);
