@@ -1,13 +1,50 @@
-//import { AppError } from '@errors';
 import { AppError } from '@errors';
+import { Step } from '@steps';
 import { User } from '@users';
 import GamesRepository from 'games/games.repository';
+import { DeleteResult } from 'typeorm';
 import { GameForCreator, GameForOpponent } from 'types/game.types';
 import { Stats } from 'types/user.types';
 import { Game } from './game.entity';
 import { GAME_STATUS } from './games.constants';
+import stepsRepository from 'steps/steps.repository';
+import stepsService from 'steps/steps.service';
 
 export class GamesService {
+  static calculateWinner(game: Game, lastSteps: string[]): Promise<Game> {
+    if (lastSteps[0] === game.hiddenByOpponent && lastSteps[1] !== game.hiddenByCreator) {
+      return GamesRepository.setWinner(game, game.creatorId);
+    }
+
+    if (lastSteps[0] !== game.hiddenByOpponent && lastSteps[1] === game.hiddenByCreator) {
+      return GamesRepository.setWinner(game, game.opponentId);
+    }
+
+    return GamesRepository.setWinner(game);
+  }
+
+  static changeStatus(game: Game, status: GAME_STATUS): PromiseLike<Game> {
+    return GamesRepository.changeStatus(game, status);
+  }
+
+  static step(userId: number, game: Game, stepValue: string): Promise<Step> {
+    const { bulls, cows } = stepsService.calculateBullsAndCows(userId, game, stepValue);
+    console.log(game.steps);
+    let sequence: number;
+    if (game.steps) {
+      sequence = game.steps.length + 1;
+    } else {
+      sequence = 1;
+    }
+
+    const step = stepsRepository.create(userId, game, sequence, stepValue, bulls, cows);
+
+    return step;
+  }
+
+  static async deleteGame(gameId: number): Promise<DeleteResult> {
+    return GamesRepository.delete(gameId);
+  }
   static async calculateUserStatistics(user: User, from?: Date, to?: Date): Promise<Stats> {
     const userGames = await GamesService.getAllGamesForUser(user.id, from, to);
     let stats: Stats = {

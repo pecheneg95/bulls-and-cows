@@ -1,11 +1,15 @@
+import { Game } from '@games';
 import { Step } from './step.entity';
 //import { GAME_STATUS } from './games.constants';
 //import { USER_ROLE } from './users.constants';
 
 class StepsRepository {
+  findByGame(gameId: number): Promise<Step[] | null> {
+    return Step.find({ where: { gameId: gameId } });
+  }
   async create(
     userId: number,
-    gameId: number,
+    game: Game,
     sequence: number,
     value: string,
     bulls: number,
@@ -13,7 +17,7 @@ class StepsRepository {
   ): Promise<Step> {
     let step = Step.create({
       userId,
-      gameId,
+      gameId: game.id,
       sequence,
       value,
       bulls,

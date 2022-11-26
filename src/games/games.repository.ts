@@ -1,8 +1,26 @@
-import { Between, In, Not } from 'typeorm';
+import { Between, DeleteResult, In, Not } from 'typeorm';
 import { Game } from './game.entity';
 import { GAME_STATUS } from './games.constants';
 
 class GamesRepository {
+  async setWinner(game: Game, winnerId?: number): Promise<Game> {
+    const updatedGame = Object.assign({}, game);
+    if (winnerId) {
+      updatedGame.winnerId = winnerId;
+      await Game.save(updatedGame);
+      return updatedGame;
+    }
+    return updatedGame;
+  }
+  async changeStatus(game: Game, status: GAME_STATUS): Promise<Game> {
+    const updatedGame = Object.assign({}, game);
+    updatedGame.status = status;
+    await Game.save(updatedGame);
+    return updatedGame;
+  }
+  delete(gameId: number): Promise<DeleteResult> {
+    return Game.delete({ id: gameId });
+  }
   async getAllGamesWithParams(
     userId: number,
     userIds: number[] | null = null,

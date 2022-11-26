@@ -84,8 +84,6 @@ export class GamesValidation {
       .withMessage('Value is not positive'),
   ];
 
-  static getHiddenLength = (): number => 4;
-
   static hidden = [
     param('gameId')
       .isInt({ allow_leading_zeroes: false })
@@ -97,8 +95,8 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: GamesValidation.getHiddenLength(), max: GamesValidation.getHiddenLength() })
-      .withMessage('The Value length does not match the game settings'),
+      .custom((value) => value >= 4)
+      .withMessage('Value less than 4'),
   ];
 
   static step = [
@@ -112,8 +110,8 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: GamesValidation.getHiddenLength(), max: GamesValidation.getHiddenLength() })
-      .withMessage('The Value length does not match the game settings'),
+      .custom((value) => value >= 4)
+      .withMessage('Value less than 4'),
   ];
 
   static changeSettings = [

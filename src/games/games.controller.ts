@@ -1,5 +1,6 @@
 import { AppError } from '@errors';
 import { NextFunction, Request, Response } from 'express';
+import StepsService from 'steps/steps.service';
 import { UsersService } from 'users/users.service';
 import { GAME_STATUS } from './games.constants';
 import { GamesService } from './games.service';
@@ -145,8 +146,14 @@ export class GamesController {
       if (game.status === GAME_STATUS.PLAYING) {
         throw new AppError('You cannot delete game after game start', 400);
       }
+
       if (game.status === GAME_STATUS.FINISHED) {
         throw new AppError('You cannot delete finished game', 400);
+      }
+
+      const deleteResult = await GamesService.deleteGame(gameId);
+      if (!deleteResult) {
+        throw new AppError('Sorry, game is not deleted', 500);
       }
 
       console.log('Game deleted');
@@ -195,12 +202,59 @@ export class GamesController {
 
   static step = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const stepValue = req.body.stepValue;
-
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
+      const stepValue = String(req.body.stepValue);
+      console.log('userId: ', userId);
+      console.log('gameId: ', gameId);
       console.log('stepValue: ', stepValue);
 
+      let game = await GamesService.findByIdOrFail(gameId);
+
+      GamesService.isMemberGame(game, userId);
+
+      if (game.status === GAME_STATUS.FINISHED) {
+        throw new AppError('You cannot make a move after the game is over', 400);
+      }
+
+      if (stepValue.length !== game.hiddenLength) {
+        throw new AppError('Incorrect step length', 400);
+      }
+
+      const pastSteps = await StepsService.findStepsForGame(gameId);
+
+      if (pastSteps) {
+        if (pastSteps.length > 0 && pastSteps[pastSteps.length - 1].userId === userId) {
+          throw new AppError("It's not your turn to make a move", 403);
+        }
+
+        if (pastSteps.length === 0 && userId === game.creatorId) {
+          throw new AppError("It's not your turn to make a move", 403); // Opponent goes first
+        }
+      }
+
+      if (game.status === GAME_STATUS.CREATED && game.hiddenByCreator && game.hiddenByOpponent) {
+        game = await GamesService.changeStatus(game, GAME_STATUS.PLAYING);
+      }
+
+      const step = await GamesService.step(userId, game, stepValue);
+      const userHidden = (userId === game.creatorId ? game.hiddenByCreator : game.hiddenByOpponent) as string;
+      const enemyHidden = (userId === game.creatorId ? game.hiddenByOpponent : game.hiddenByCreator) as string;
+
+      if (pastSteps && pastSteps.length > 0) {
+        if (
+          (userId === game.creatorId && pastSteps[pastSteps.length - 1].value === userHidden) ||
+          (userId === game.opponentId && pastSteps[pastSteps.length - 1].value === userHidden)
+        ) {
+          game = await GamesService.changeStatus(game, GAME_STATUS.FINISHED);
+          const lastSteps = [pastSteps[pastSteps.length - 1].value, step.value];
+          await GamesService.calculateWinner(game, lastSteps);
+        }
+      }
+
       res.status(200).json({
-        step: stepValue,
+        step: step,
+        isCorrect: enemyHidden === stepValue,
       });
     } catch (error) {
       next(error);
