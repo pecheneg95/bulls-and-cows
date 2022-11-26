@@ -16,13 +16,13 @@ router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesC
 router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.hidden); // Загадать число
 router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.step); // Сделать ход
 
-/*router.patch(
+router.patch(
   '/digits-number/:gameId',
   isAdmin,
   ...GamesValidation.changeSettings,
   validatePayload,
   GamesController.changeSettings
-); // Изменить настройки игры (для admin)*/
+); // Изменить настройки игры (для admin)
 
 export function mountRouter(app: Application): void {
   app.use('/games', isAuth, router);

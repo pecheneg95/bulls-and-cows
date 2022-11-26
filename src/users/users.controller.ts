@@ -9,7 +9,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   static me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = Number(req.params.userId);
+      const userId = Number(req.userId);
 
       console.log('userId: ', userId);
 

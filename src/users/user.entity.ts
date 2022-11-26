@@ -47,5 +47,5 @@ export class User extends BaseEntity {
   joinedGames!: Game[];
 
   @OneToMany(() => Step, (step) => step.user)
-  steps!: Game[];
+  steps!: Step[];
 }
