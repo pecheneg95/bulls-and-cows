@@ -1,12 +1,13 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
-import UsersRepository from '../users/users.repository';
 import { AppError } from '@errors';
+import { UsersRepository } from '@users';
+
 import { JWT_SECRET } from './auth.constants';
 
-class AuthService {
-  async signUp(username: string, password: string, email: string): Promise<void> {
+export class AuthService {
+  static async signUp(username: string, password: string, email: string): Promise<void> {
     const conflict = await UsersRepository.findByEmail(email);
 
     if (conflict) {
@@ -17,7 +18,7 @@ class AuthService {
     await UsersRepository.create(username, hashedPassword, email);
   }
 
-  async login(password: string, email: string): Promise<{ token: string }> {
+  static async login(password: string, email: string): Promise<{ token: string }> {
     const user = await UsersRepository.findByEmail(email);
     const authError = new AppError('Authentification failed. Check your email/password.', 401);
 
@@ -34,5 +35,3 @@ class AuthService {
     return { token: jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1h' }) };
   }
 }
-
-export const authService = new AuthService();

@@ -1,5 +1,5 @@
 import { Game } from '@games';
-import { Step } from './step.entity';
+import { Step } from '../games/step.entity';
 import stepsRepository from './steps.repository';
 
 export default class StepsService {

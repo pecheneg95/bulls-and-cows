@@ -1,13 +1,12 @@
 import { AppError } from '@errors';
-import { STATS, User } from '@users';
+import { STATS } from '@users';
 import { NextFunction, Request, Response } from 'express';
 import { GamesService } from 'games/games.service';
 import { Stats } from 'types/user.types';
-import usersRepository from './users.repository';
 import { UsersService } from './users.service';
 
 export class UsersController {
-  static me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = Number(req.userId);
 
@@ -21,9 +20,9 @@ export class UsersController {
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static stats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async stats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = Number(req.params.userId);
 
@@ -43,9 +42,9 @@ export class UsersController {
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static getLeaderboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getLeaderboard(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const reqQueryLeaderboard = {
         sort: req.query.sort as STATS,
@@ -80,15 +79,5 @@ export class UsersController {
     } catch (error) {
       next(error);
     }
-  };
-
-  static findUser = async (userId: number): Promise<User> => {
-    const user = await usersRepository.findById(userId);
-
-    if (!user) {
-      throw new AppError('User not found', 404);
-    }
-
-    return user;
-  };
+  }
 }

@@ -1,2 +1,2 @@
-export * from './step.entity';
+export * from '../games/step.entity';
 export * from './steps.repository';

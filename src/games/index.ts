@@ -1,3 +1,4 @@
+export * from './step.entity';
 export * from './game.entity';
 export * from './games.constants';
 export * from './games.controller';

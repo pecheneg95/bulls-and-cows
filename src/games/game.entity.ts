@@ -10,9 +10,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { GAME_STATUS } from './games.constants';
-import { User } from 'users/user.entity';
-import { Step } from 'steps/step.entity';
+import { User } from '@users';
+
+import { Step } from 'games/step.entity';
+import { GAME_STATUS, MIN_HIDDEN_LENGTH } from './games.constants';
 
 @Entity('game')
 export class Game extends BaseEntity {
@@ -41,7 +42,7 @@ export class Game extends BaseEntity {
   @Column('text', { default: null, nullable: true })
   hiddenByOpponent!: string;
 
-  @Column({ default: 4 })
+  @Column({ default: MIN_HIDDEN_LENGTH })
   hiddenLength!: number;
 
   @CreateDateColumn()

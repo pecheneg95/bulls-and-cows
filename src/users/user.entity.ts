@@ -9,8 +9,7 @@ import {
 } from 'typeorm';
 
 import { USER_ROLE } from './users.constants';
-import { Game } from '../games/game.entity';
-import { Step } from 'steps/step.entity';
+import { Game, Step } from '@games';
 
 @Entity('user')
 export class User extends BaseEntity {

@@ -3,7 +3,8 @@ import { Application } from 'express';
 
 import { validatePayload } from '@middleware';
 
-import { AuthController, AuthValidation } from '@auth';
+import { AuthValidation } from './auth.validation';
+import { AuthController } from './auth.controller';
 
 const router = express.Router();
 

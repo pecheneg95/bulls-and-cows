@@ -1,5 +1,5 @@
 import { Game } from '@games';
-import { Step } from './step.entity';
+import { Step } from '../games/step.entity';
 //import { GAME_STATUS } from './games.constants';
 //import { USER_ROLE } from './users.constants';
 

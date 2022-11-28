@@ -1,6 +1,7 @@
 import { Between, DeleteResult, In, Not } from 'typeorm';
 import { Game } from './game.entity';
 import { GAME_STATUS } from './games.constants';
+import { Step } from './step.entity';
 
 class GamesRepository {
   async setWinner(game: Game, winnerId?: number): Promise<Game> {
@@ -120,5 +121,35 @@ class GamesRepository {
       ],
     });
   }
+
+  async stepFindByGame(gameId: number): Promise<Step[] | null> {
+    return Step.find({ where: { gameId: gameId } });
+  }
+
+  async stepCreate(
+    userId: number,
+    game: Game,
+    sequence: number,
+    value: string,
+    bulls: number,
+    cows: number
+  ): Promise<Step> {
+    let step = Step.create({
+      userId,
+      gameId: game.id,
+      sequence,
+      value,
+      bulls,
+      cows,
+    });
+
+    step = await Step.save(step);
+    return step;
+  }
+
+  async stepFindById(id: number): Promise<Step | null> {
+    return Step.findOneBy({ id });
+  }
 }
+
 export default new GamesRepository();
