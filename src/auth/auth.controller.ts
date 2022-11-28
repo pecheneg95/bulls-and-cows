@@ -8,7 +8,6 @@ export class AuthController {
       console.log('Username: ', username);
       console.log('Email: ', email);
       console.log('Password: ', password);
-      console.log('User has been created');
 
       res.status(201).json({
         message: 'User has been created',
@@ -24,10 +23,10 @@ export class AuthController {
 
       console.log('Email: ', email);
       console.log('Password: ', password);
-      console.log('Authentification succeeded.');
 
       res.status(200).json({
         message: 'Authentification succeeded.',
+        token: 'token',
       });
     } catch (error) {
       next(error);
@@ -36,7 +35,9 @@ export class AuthController {
 
   static logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('Logout succeeded.');
+      const userId = Number(req.userId);
+
+      console.log('userId: ', userId);
 
       res.status(200).json({
         message: 'Logout succeeded.',

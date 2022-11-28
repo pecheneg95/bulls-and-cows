@@ -1,15 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 
 export class GamesController {
-  static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static allMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userIds = req.query.userIds;
-      console.log('Get all me games');
-      if (userIds) {
-        res.status(200).json(userIds);
-      } else {
-        res.status(200).json('Get all me games');
-      }
+
+      console.log('userIds: ', userIds);
+
+      res.status(200).json('Game[]');
     } catch (error) {
       next(error);
     }
@@ -17,11 +15,13 @@ export class GamesController {
 
   static createGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const opponentId = req.body.opponentId;
+      const opponentId = Number(req.body.opponentId);
+      const creatorId = Number(req.userId);
 
       console.log('opponentId: ', opponentId);
+      console.log('creatorId: ', creatorId);
 
-      res.status(200).json(opponentId);
+      res.status(200).json('Game');
     } catch (error) {
       next(error);
     }
@@ -29,11 +29,13 @@ export class GamesController {
 
   static infoAboutGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const gameId = req.params.gameId;
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
 
+      console.log('userId: ', userId);
       console.log('gameId: ', gameId);
 
-      res.status(200).json(gameId);
+      res.status(200).json('Game');
     } catch (error) {
       next(error);
     }
@@ -41,11 +43,15 @@ export class GamesController {
 
   static changeOpponent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const newOpponentId = req.body.opponentId;
+      const userId = Number(req.userId);
+      const newOpponentId = Number(req.body.opponentId);
+      const gameId = Number(req.params.gameId);
 
-      console.log('opponentId: ', newOpponentId);
+      console.log('userId: ', userId);
+      console.log('newOpponentId: ', newOpponentId);
+      console.log('gameId: ', gameId);
 
-      res.status(200).json(newOpponentId);
+      res.status(200).json('Game');
     } catch (error) {
       next(error);
     }
@@ -53,8 +59,13 @@ export class GamesController {
 
   static deleteGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      console.log('Game deleted');
-      res.status(200).json('Game deleted');
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
+
+      console.log('userId: ', userId);
+      console.log('gameId: ', gameId);
+
+      res.status(200).json({ message: 'Game deleted' });
     } catch (error) {
       next(error);
     }
@@ -62,11 +73,13 @@ export class GamesController {
 
   static hidden = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const hidden = req.body.hidden;
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
 
-      console.log('hidden: ', hidden);
+      console.log('userId: ', userId);
+      console.log('gameId: ', gameId);
 
-      res.status(200).json(hidden);
+      res.status(200).json('Game');
     } catch (error) {
       next(error);
     }
@@ -74,13 +87,15 @@ export class GamesController {
 
   static step = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const stepValue = req.body.stepValue;
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
+      const stepValue = String(req.body.stepValue);
 
+      console.log('userId: ', userId);
+      console.log('gameId: ', gameId);
       console.log('stepValue: ', stepValue);
 
-      res.status(200).json({
-        step: stepValue,
-      });
+      res.status(200).json('Step');
     } catch (error) {
       next(error);
     }
@@ -88,11 +103,15 @@ export class GamesController {
 
   static changeSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const hiddenLength = req.body.hiddenLength;
+      const hiddenLength = Number(req.body.hiddenLength);
+      const userId = Number(req.userId);
+      const gameId = Number(req.params.gameId);
 
       console.log('hiddenLength: ', hiddenLength);
+      console.log('userId: ', userId);
+      console.log('gameId: ', gameId);
 
-      res.status(200).json(hiddenLength);
+      res.status(200).json('Game');
     } catch (error) {
       next(error);
     }

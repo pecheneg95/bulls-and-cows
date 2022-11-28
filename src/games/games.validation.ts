@@ -1,5 +1,5 @@
 import { body, param, query } from 'express-validator';
-import { GAME_SORT_BY, GAME_STATUS, SORT_DIRECTION } from './games.constants';
+import { GAME_SORT_BY, GAME_STATUS, MIN_HIDDEN_LENGTG, SORT_DIRECTION } from './games.constants';
 
 export class GamesValidation {
   static allMyGame = [
@@ -84,8 +84,6 @@ export class GamesValidation {
       .withMessage('Value is not positive'),
   ];
 
-  static getHiddenLength = (): number => 4;
-
   static hidden = [
     param('gameId')
       .isInt({ allow_leading_zeroes: false })
@@ -97,8 +95,8 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: GamesValidation.getHiddenLength(), max: GamesValidation.getHiddenLength() })
-      .withMessage('The Value length does not match the game settings'),
+      .isLength({ min: MIN_HIDDEN_LENGTG })
+      .withMessage('Value less than min hidden length'),
   ];
 
   static step = [
@@ -112,8 +110,8 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: GamesValidation.getHiddenLength(), max: GamesValidation.getHiddenLength() })
-      .withMessage('The Value length does not match the game settings'),
+      .isLength({ min: MIN_HIDDEN_LENGTG })
+      .withMessage('Value less than min hidden length'),
   ];
 
   static changeSettings = [
@@ -125,7 +123,7 @@ export class GamesValidation {
     body('hiddenLength')
       .isInt({ allow_leading_zeroes: false })
       .withMessage('Value is not number')
-      .custom((value) => value >= 4)
-      .withMessage('Value less than 4'),
+      .isLength({ min: MIN_HIDDEN_LENGTG })
+      .withMessage('Value less than min hidden length'),
   ];
 }

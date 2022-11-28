@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { Application } from 'express';
 
-import { validatePayload } from '../middleware/validate-payload.middleware';
+import { validatePayload } from '@middleware';
 
 import { AuthController } from './auth.controller';
 import { AuthValidation } from './auth.validation';
