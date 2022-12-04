@@ -1,6 +1,6 @@
 import { DeleteResult } from 'typeorm';
 
-import { ForbiddenError, NotFoundError } from '@errors';
+import { ForbiddenError, GAMES_ERROR_MESSAGE, NotFoundError } from '@errors';
 
 import { GameForCreator, GameForOpponent, GAME_STATUS } from './games.constants';
 import { GamesRepository } from 'games/games.repository';
@@ -24,7 +24,7 @@ export class GamesService {
     return GamesRepository.changeStatus(game, status);
   }
 
-  static async step(userId: number, game: Game, stepValue: string): Promise<Step> {
+  static async makeStep(userId: number, game: Game, stepValue: string): Promise<Step> {
     const { bulls, cows } = GamesService.calculateBullsAndCows(userId, game, stepValue);
 
     let sequence = 1;
@@ -33,9 +33,7 @@ export class GamesService {
       sequence += game.steps.length;
     }
 
-    const step = GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
-
-    return step;
+    return GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
   }
 
   static async deleteGame(gameId: number): Promise<DeleteResult> {
@@ -52,11 +50,11 @@ export class GamesService {
   ): Promise<{
     totalCount: number;
     games: Game[];
-  } | void> {
+  }> {
     const games = await GamesRepository.getAllGamesWithParams(userId, userIds, gameStatus);
 
     if (!games) {
-      throw new NotFoundError('Games with this params is not found');
+      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
     }
 
     return {
@@ -85,7 +83,7 @@ export class GamesService {
     return GamesRepository.changeSettings(game, hiddenLength);
   }
 
-  static async hidden(game: Game, userId: number, hidden: string): Promise<Game> {
+  static async makeHidden(game: Game, userId: number, hidden: string): Promise<Game> {
     return GamesRepository.hidden(game, userId, hidden);
   }
 
@@ -107,18 +105,8 @@ export class GamesService {
 
   static isMemberGame(game: Game, userId: number): void {
     if (userId !== game.creatorId && userId !== game.opponentId) {
-      throw new ForbiddenError('You are not a member of this game');
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
     }
-  }
-
-  static async findByIdOrFail(id: number): Promise<Game> {
-    const game = await GamesRepository.findById(id);
-
-    if (!game) {
-      throw new NotFoundError('Game not found');
-    }
-
-    return game;
   }
 
   static async findStepsForGame(gameId: number): Promise<Step[] | null> {

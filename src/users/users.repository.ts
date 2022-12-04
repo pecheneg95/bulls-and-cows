@@ -4,104 +4,25 @@ import { User } from './user.entity';
 import { Stats, STATS, USER_ROLE } from './users.constants';
 
 export class UsersRepository {
-  static getLeaderboardForAverageStepsToWin(
-    dateFrom: Date,
-    dateTo: Date,
-    offset: number,
-    limit: number
-  ): Stats[] | PromiseLike<Stats[] | null> | null {
-    const leaderboard = User.createQueryBuilder()
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('ROUND(AVG("winStepsCount"))')
-            .from(
-              (qb) =>
-                qb
-                  .select('COUNT(*)', 'winStepsCount')
-                  .from(Game, 'game')
-                  .innerJoin(Step, 'step', 'game.id = step."gameId"')
-                  .where('game.status = :status', { status: GAME_STATUS.FINISHED })
-                  .andWhere('game."winnerId" = user.id')
-                  .andWhere('step."userId" = user.id'),
-              'stepsCountByGame'
-            ),
-        STATS.AVERAGE_STEPS_COUNT_TO_WIN
-      )
-      .from(User, 'user')
-      .groupBy('user.id')
-      .orderBy('"averageStepsCountToWin"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
+  static async create(username: string, password: string, email: string): Promise<User> {
+    let user = User.create({
+      username,
+      password,
+      email,
+      role: USER_ROLE.USER,
+    });
 
-    return leaderboard;
+    user = await User.save(user);
+
+    return user;
   }
 
-  static async getLeaderboardForCompletedGamesCount(
-    dateFrom: Date,
-    dateTo: Date,
-    offset: number,
-    limit: number
-  ): Promise<Stats[] | null> {
-    const leaderboard = User.createQueryBuilder()
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = user.id').orWhere('"opponentId" = user.id');
-              })
-            )
-            .andWhere('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"createdAt" >= :from', { from: dateFrom })
-            .andWhere('"createdAt" <= :to', { to: dateTo }),
-        STATS.COMPLETED_GAMES_COUNT
-      )
-      .from(User, 'user')
-      .groupBy('user.id')
-      .orderBy('"completedGamesCount"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
-
-    return leaderboard;
+  static async findByEmail(email: string): Promise<User | null> {
+    return User.findOneBy({ email });
   }
 
-  static getLeaderboardForWinsCount(
-    dateFrom: Date,
-    dateTo: Date,
-    offset: number,
-    limit: number
-  ): Stats[] | PromiseLike<Stats[] | null> | null {
-    const leaderboard = User.createQueryBuilder()
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"winnerId" = user.id')
-            .andWhere('"createdAt" >= :from', { from: dateFrom })
-            .andWhere('"createdAt" <= :to', { to: dateTo }),
-        STATS.WINS_COUNT
-      )
-      .from(User, 'user')
-      .groupBy('user.id')
-      .orderBy('"winsCount"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
-
-    return leaderboard;
+  static async findById(id: number): Promise<User | null> {
+    return User.findOneBy({ id });
   }
 
   static async getStats(userId: number): Promise<Stats | null> {
@@ -196,28 +117,105 @@ export class UsersRepository {
     return stats;
   }
 
-  static async findAll(): Promise<User[] | null> {
-    return User.find();
+  static async getLeaderboardForAverageStepsToWin(
+    dateFrom: Date,
+    dateTo: Date,
+    offset: number,
+    limit: number
+  ): Promise<Stats[] | null> {
+    const leaderboard = User.createQueryBuilder()
+      .select('user.id')
+      .addSelect('user.username')
+      .addSelect(
+        (qb) =>
+          qb
+            .select('ROUND(AVG("winStepsCount"))')
+            .from(
+              (qb) =>
+                qb
+                  .select('COUNT(*)', 'winStepsCount')
+                  .from(Game, 'game')
+                  .innerJoin(Step, 'step', 'game.id = step."gameId"')
+                  .where('game.status = :status', { status: GAME_STATUS.FINISHED })
+                  .andWhere('game."winnerId" = user.id')
+                  .andWhere('step."userId" = user.id')
+                  .andWhere('game."createdAt" >= :from', { from: dateFrom })
+                  .andWhere('game."createdAt" <= :to', { to: dateTo }),
+              'stepsCountByGame'
+            ),
+        STATS.AVERAGE_STEPS_COUNT_TO_WIN
+      )
+      .from(User, 'user')
+      .groupBy('user.id')
+      .orderBy('"averageStepsCountToWin"', 'DESC')
+      .offset(offset)
+      .limit(limit)
+      .getRawMany();
+
+    return leaderboard;
   }
 
-  static async create(username: string, password: string, email: string): Promise<User> {
-    let user = User.create({
-      username,
-      password,
-      email,
-      role: USER_ROLE.USER,
-    });
+  static async getLeaderboardForCompletedGamesCount(
+    dateFrom: Date,
+    dateTo: Date,
+    offset: number,
+    limit: number
+  ): Promise<Stats[] | null> {
+    const leaderboard = User.createQueryBuilder()
+      .select('user.id')
+      .addSelect('user.username')
+      .addSelect(
+        (qb) =>
+          qb
+            .select('COUNT(game)')
+            .from(Game, 'game')
+            .where(
+              new Brackets((qb) => {
+                qb.where('"creatorId" = user.id').orWhere('"opponentId" = user.id');
+              })
+            )
+            .andWhere('status = :status', { status: GAME_STATUS.FINISHED })
+            .andWhere('"createdAt" >= :from', { from: dateFrom })
+            .andWhere('"createdAt" <= :to', { to: dateTo }),
+        STATS.COMPLETED_GAMES_COUNT
+      )
+      .from(User, 'user')
+      .groupBy('user.id')
+      .orderBy('"completedGamesCount"', 'DESC')
+      .offset(offset)
+      .limit(limit)
+      .getRawMany();
 
-    user = await User.save(user);
-
-    return user;
+    return leaderboard;
   }
 
-  static async findByEmail(email: string): Promise<User | null> {
-    return User.findOneBy({ email });
-  }
+  static async getLeaderboardForWinsCount(
+    dateFrom: Date,
+    dateTo: Date,
+    offset: number,
+    limit: number
+  ): Promise<Stats[] | null> {
+    const leaderboard = User.createQueryBuilder()
+      .select('user.id')
+      .addSelect('user.username')
+      .addSelect(
+        (qb) =>
+          qb
+            .select('COUNT(game)')
+            .from(Game, 'game')
+            .where('status = :status', { status: GAME_STATUS.FINISHED })
+            .andWhere('"winnerId" = user.id')
+            .andWhere('"createdAt" >= :from', { from: dateFrom })
+            .andWhere('"createdAt" <= :to', { to: dateTo }),
+        STATS.WINS_COUNT
+      )
+      .from(User, 'user')
+      .groupBy('user.id')
+      .orderBy('"winsCount"', 'DESC')
+      .offset(offset)
+      .limit(limit)
+      .getRawMany();
 
-  static async findById(id: number): Promise<User | null> {
-    return User.findOneBy({ id });
+    return leaderboard;
   }
 }

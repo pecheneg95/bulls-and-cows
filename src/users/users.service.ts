@@ -7,10 +7,6 @@ export class UsersService {
     return UsersRepository.findById(id);
   }
 
-  static async allUsers(): Promise<User[] | null> {
-    return UsersRepository.findAll();
-  }
-
   static async getStats(userId: number): Promise<Stats | null> {
     const stats = await UsersRepository.getStats(userId);
 
@@ -24,7 +20,6 @@ export class UsersService {
     offset: number,
     limit: number
   ): Promise<Stats[] | null> {
-    console.log(sortField);
     if (sortField === STATS.AVERAGE_STEPS_COUNT_TO_WIN) {
       return UsersRepository.getLeaderboardForAverageStepsToWin(dateFrom, dateTo, offset, limit);
     }

@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
-import { ConflictError, UnauthorizedError } from '@errors';
+import { ConflictError, UnauthorizedError, AUTH_ERROR_MESSAGE } from '@errors';
 
 import { UsersRepository } from '@users';
 
@@ -12,7 +12,7 @@ export class AuthService {
     const isEmailUsed = !!(await UsersRepository.findByEmail(email));
 
     if (isEmailUsed) {
-      throw new ConflictError('Email already in use');
+      throw new ConflictError(AUTH_ERROR_MESSAGE.EMAIL_IN_USE);
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT);
@@ -22,16 +22,15 @@ export class AuthService {
 
   static async login(password: string, email: string): Promise<string> {
     const user = await UsersRepository.findByEmail(email);
-    const authErrorMessage = 'Authentification failed. Check your email/password.';
 
     if (!user) {
-      throw new UnauthorizedError(authErrorMessage);
+      throw new UnauthorizedError(AUTH_ERROR_MESSAGE.EMAIL_NOT_FOUND);
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      throw new UnauthorizedError(authErrorMessage);
+      throw new UnauthorizedError(AUTH_ERROR_MESSAGE.INVALID_PASSWORD);
     }
 
     return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
