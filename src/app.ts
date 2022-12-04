@@ -1,10 +1,12 @@
-import express from 'express';
+import * as express from 'express';
 
-import { mountRouter as mountAuthRouter } from './auth/auth.router';
-import { mountRouter as mountUsersRouter } from './users/users.router';
-import { mountRouter as mountGamesRouter } from './games/games.router';
-import { AppDataSource } from './data-source';
+import { mountRouter as mountAuthRouter } from '@auth';
+import { mountRouter as mountUsersRouter } from '@users';
+import { mountRouter as mountGamesRouter } from '@games';
+
 import { logRequest, processError, processNotFoundEndpoint } from '@middleware';
+
+import { AppDataSource } from './data-source';
 
 const app = express();
 

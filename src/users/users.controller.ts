@@ -1,44 +1,37 @@
-import { AppError } from '@errors';
-import { STATS } from '@users';
 import { NextFunction, Request, Response } from 'express';
-import { GamesService } from 'games/games.service';
-import { Stats } from 'types/user.types';
+
+import { NotFoundError } from '@errors';
+
+import { STATS } from './users.constants';
 import { UsersService } from './users.service';
 
 export class UsersController {
-  static async me(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getInfoAboutMyself(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = Number(req.userId);
-
-      console.log('userId: ', userId);
-
       const user = await UsersService.findById(userId);
 
-      if (user) {
-        res.status(200).json(user);
+      if (!user) {
+        throw new NotFoundError(`User witn id ${userId} is not found`);
       }
+
+      res.status(200).json(user);
     } catch (error) {
       next(error);
     }
   }
 
-  static async stats(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getUserStats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = Number(req.params.userId);
-
-      console.log('userId: ', userId);
-
       const user = await UsersService.findById(userId);
 
       if (!user) {
-        AppError.notFound(`User witn id ${userId} is not found`);
+        throw new NotFoundError(`User witn id ${userId} is not found`);
       }
+      const stats = await UsersService.getStats(userId);
 
-      if (user) {
-        const stats = await GamesService.calculateUserStatistics(user);
-
-        res.status(200).json(stats);
-      }
+      res.status(200).json(stats);
     } catch (error) {
       next(error);
     }
@@ -46,36 +39,15 @@ export class UsersController {
 
   static async getLeaderboard(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const reqQueryLeaderboard = {
-        sort: req.query.sort as STATS,
-        from: new Date(Date.parse(String(req.query.from))),
-        to: new Date(Date.parse(String(req.query.to))),
-        offset: Number(req.query.offset),
-        limit: Number(req.query.limit),
-      };
+      const sortField = req.query.sort as STATS;
+      const dateFrom = new Date(Date.parse(String(req.query.from)));
+      const dateTo = new Date(Date.parse(String(req.query.to)));
+      const offset = Number(req.query.offset);
+      const limit = Number(req.query.limit);
 
-      console.log(reqQueryLeaderboard);
+      const leaderboard = await UsersService.getLeaderboard(sortField, dateFrom, dateTo, offset, limit);
 
-      const allUsers = await UsersService.allUsers();
-
-      if (!allUsers) {
-        AppError.notFound('Impossible, but there are no users in the game');
-      }
-
-      if (allUsers) {
-        const allUserStats: Stats[] = await (
-          await Promise.all(
-            allUsers.map(async (el) => {
-              return GamesService.calculateUserStatistics(el, reqQueryLeaderboard.from, reqQueryLeaderboard.to);
-            })
-          )
-        )
-          .sort((a, b) => b[reqQueryLeaderboard.sort] - a[reqQueryLeaderboard.sort])
-          .slice(reqQueryLeaderboard.offset, reqQueryLeaderboard.limit);
-
-        console.log('allUserStats: ', allUserStats);
-        res.status(200).json(allUserStats);
-      }
+      res.status(200).json(leaderboard);
     } catch (error) {
       next(error);
     }

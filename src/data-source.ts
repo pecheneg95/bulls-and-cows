@@ -1,8 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { User } from '@users';
-import { Game } from '@games';
-import { Step } from '@steps';
+import { Game, Step } from '@games';
 //import * as Migrations from './migrations';
 dotenv.config();
 

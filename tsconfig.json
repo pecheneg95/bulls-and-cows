@@ -18,7 +18,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "typeRoots": [
       "./types",
       "./node_modules/@types"
@@ -29,9 +29,6 @@
       ],
       "@games": [
         "games"
-      ],
-      "@steps": [
-        "steps"
       ],
       "@errors": [
         "errors"

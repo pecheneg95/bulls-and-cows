@@ -8,7 +8,9 @@ export const validatePayload = (req: Request, res: Response, next: NextFunction)
 
   if (!errors.isEmpty()) {
     res.status(400).json({ message: 'Bad request', statusCode: 400, errors: errors.array() });
+
     return;
   }
+
   next();
 };

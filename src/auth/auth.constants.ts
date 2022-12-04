@@ -1,3 +1,8 @@
+const MIN_USERNAME_LENGTH = 5;
+const MAX_USERNAME_LENGTH = 256;
+const MIN_PASSWORD_LENGTH = 10;
+const PASSWORD_FORMAT = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).+[!@#$%^&*()_+=]/gm;
 const JWT_SECRET = 'Got Milk?';
+const SALT = 12;
 
-export { JWT_SECRET };
+export { MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_FORMAT, JWT_SECRET, SALT };

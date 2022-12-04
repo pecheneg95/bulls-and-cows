@@ -8,21 +8,22 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { USER_ROLE } from './users.constants';
 import { Game, Step } from '@games';
+
+import { USER_ROLE } from './users.constants';
 
 @Entity('user')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column('text')
+  @Column()
   username!: string;
 
-  @Column('text')
+  @Column()
   password!: string;
 
-  @Column('text', {
+  @Column({
     unique: true,
   })
   email!: string;

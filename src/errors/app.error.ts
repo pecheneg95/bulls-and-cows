@@ -2,16 +2,44 @@ export class AppError extends Error {
   constructor(message: string, public readonly statusCode: number) {
     super(message);
   }
+}
 
-  static badRequest(message: string): AppError {
-    throw new AppError(message, 400);
+export class BadRequestError extends AppError {
+  constructor(message: string) {
+    super(message, 400);
   }
+}
 
-  static forbidden(message: string): AppError {
-    throw new AppError(message, 403);
+export class UnauthorizedError extends AppError {
+  constructor(message: string) {
+    super(message, 401);
   }
+}
 
-  static notFound(message: string): AppError {
-    throw new AppError(message, 404);
+export class ForbiddenError extends AppError {
+  constructor(message: string) {
+    super(message, 403);
   }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message: string) {
+    super(message, 404);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, 409);
+  }
+}
+
+export class InternalServerError extends AppError {
+  constructor(message: string) {
+    super(message, 500);
+  }
+}
+
+export function isAppError(error: unknown): error is AppError {
+  return error instanceof AppError;
 }

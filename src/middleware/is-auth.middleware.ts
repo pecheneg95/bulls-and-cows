@@ -1,14 +1,16 @@
-import { AppError } from '@errors';
-import { JWT_SECRET } from '@auth';
 import { NextFunction, Request, Response } from 'express';
-
 import * as jwt from 'jsonwebtoken';
 
-export function isAuth(req: Request, res: Response, next: NextFunction): void {
+import { BadRequestError, UnauthorizedError } from '@errors';
+import { JWT_SECRET } from '@auth';
+
+export const isAuth = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const authHeader = req.get('Authorization');
 
-    if (!authHeader) throw new AppError('Authorization header is missing', 400);
+    if (!authHeader) {
+      throw new BadRequestError('Authorization header is missing');
+    }
 
     const [, token] = authHeader.split(' '); // 'Bearer {{token}}'
 
@@ -20,11 +22,13 @@ export function isAuth(req: Request, res: Response, next: NextFunction): void {
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError && error.message === 'invalid signature') {
-      return next(new AppError('Invalid authorization token', 401));
+      return next(new UnauthorizedError('Invalid authorization token'));
     }
+
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new AppError('Authorization token expired', 401));
+      return next(new UnauthorizedError('Authorization token expired'));
     }
+
     next(error);
   }
-}
+};

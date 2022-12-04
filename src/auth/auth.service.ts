@@ -1,37 +1,39 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
-import { AppError } from '@errors';
+import { ConflictError, UnauthorizedError } from '@errors';
+
 import { UsersRepository } from '@users';
 
-import { JWT_SECRET } from './auth.constants';
+import { SALT, JWT_SECRET } from './auth.constants';
 
 export class AuthService {
   static async signUp(username: string, password: string, email: string): Promise<void> {
-    const conflict = await UsersRepository.findByEmail(email);
+    const isEmailUsed = !!(await UsersRepository.findByEmail(email));
 
-    if (conflict) {
-      throw new AppError('Email already in use', 422);
+    if (isEmailUsed) {
+      throw new ConflictError('Email already in use');
     }
-    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const hashedPassword = await bcrypt.hash(password, SALT);
 
     await UsersRepository.create(username, hashedPassword, email);
   }
 
-  static async login(password: string, email: string): Promise<{ token: string }> {
+  static async login(password: string, email: string): Promise<string> {
     const user = await UsersRepository.findByEmail(email);
-    const authError = new AppError('Authentification failed. Check your email/password.', 401);
+    const authErrorMessage = 'Authentification failed. Check your email/password.';
 
     if (!user) {
-      throw authError;
+      throw new UnauthorizedError(authErrorMessage);
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      throw authError;
+      throw new UnauthorizedError(authErrorMessage);
     }
 
-    return { token: jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1h' }) };
+    return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
   }
 }

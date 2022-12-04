@@ -1,5 +1,7 @@
+import { NotFoundError } from '@errors';
 import { Request, Response } from 'express';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const processNotFoundEndpoint = (_req: Request, res: Response): void => {
-  res.status(404).json({ message: 'API endpoint not found', statusCode: 404 });
+  throw new NotFoundError('API endpoint not found');
 };

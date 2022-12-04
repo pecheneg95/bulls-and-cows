@@ -17,7 +17,7 @@ export class Step extends BaseEntity {
   @Column()
   sequence!: number;
 
-  @Column('text')
+  @Column()
   value!: string;
 
   @Column()

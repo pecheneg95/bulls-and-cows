@@ -1,3 +1,5 @@
+import { Game } from './game.entity';
+
 enum GAME_STATUS {
   CREATED = 'created',
   PLAYING = 'playing',
@@ -15,4 +17,8 @@ enum SORT_DIRECTION {
 
 const MIN_HIDDEN_LENGTH = 4;
 
-export { GAME_STATUS, GAME_SORT_BY, SORT_DIRECTION, MIN_HIDDEN_LENGTH };
+type GameForCreator = Omit<Game, 'hiddenByOpponent'>;
+
+type GameForOpponent = Omit<Game, 'hiddenByCreator'>;
+
+export { GAME_STATUS, GAME_SORT_BY, SORT_DIRECTION, MIN_HIDDEN_LENGTH, GameForCreator, GameForOpponent };
