@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { STATS } from './users.constants';
 
 export class UsersController {
-  static me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static getInfoAboutMyself = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       console.log('Info about me');
 
@@ -12,7 +12,7 @@ export class UsersController {
     }
   };
 
-  static stats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static getUserStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.params.userId;
 
@@ -28,8 +28,8 @@ export class UsersController {
     try {
       const reqQueryLeaderboard = {
         sort: req.query.sort as STATS,
-        from: new Date(Date.parse(String(req.query.from))),
-        to: new Date(Date.parse(String(req.query.to))),
+        from: new Date(String(req.query.from)),
+        to: new Date(String(req.query.to)),
         offset: Number(req.query.offset),
         limit: Number(req.query.limit),
       };

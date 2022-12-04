@@ -17,4 +17,15 @@ enum SORT_DIRECTION {
   DESC = 'desc',
 }
 
-export { USER_ROLE, STATS, SORT_DIRECTION };
+type Stats = {
+  userid: number;
+  username: string;
+  [STATS.GAMES_COUNT]: number;
+  [STATS.WINS_COUNT]: number;
+  [STATS.LOSSES_COUNT]: number;
+  [STATS.DRAW_COUNT]: number;
+  [STATS.COMPLETED_GAMES_COUNT]: number;
+  [STATS.AVERAGE_STEPS_COUNT_TO_WIN]: number;
+};
+
+export { USER_ROLE, STATS, SORT_DIRECTION, Stats };

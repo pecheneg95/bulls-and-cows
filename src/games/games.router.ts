@@ -8,22 +8,22 @@ import { GamesValidation } from './games.validation';
 
 const router = express.Router();
 
-router.get('/', ...GamesValidation.allMyGame, validatePayload, GamesController.allMyGames); // Получить информацию о всех своих играх (с филльтрацией)
-router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame); // Создать игру
+router.get('/', ...GamesValidation.allMyGame, validatePayload, GamesController.getAllMyGames);
+router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame);
 
-router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.infoAboutGame); // Получить информацию об игре
-router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent); // Изменить противника
-router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame); // Отменить игру (удалить)
+router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.getInfoAboutGame);
+router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent);
+router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame);
 
-router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.hidden); // Загадать число
-router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.step); // Сделать ход
+router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.makeHidden);
+router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.makeMove);
 
 router.patch(
   'digits-number/:gameId',
   ...GamesValidation.changeSettings,
   validatePayload,
   GamesController.changeSettings
-); // Изменить настройки игры (для admin)
+);
 
 export function mountRouter(app: Application): void {
   app.use('/games', router);

@@ -8,8 +8,8 @@ import { UsersValidation } from 'users/users.validation';
 
 const router = express.Router();
 
-router.get('/me', UsersController.me);
-router.get('/:userId/stats', ...UsersValidation.stats, validatePayload, UsersController.stats);
+router.get('/me', UsersController.getInfoAboutMyself);
+router.get('/:userId/stats', ...UsersValidation.stats, validatePayload, UsersController.getUserStats);
 router.get('/leaderboard', ...UsersValidation.leaderboard, validatePayload, UsersController.getLeaderboard);
 
 export function mountRouter(app: Application): void {

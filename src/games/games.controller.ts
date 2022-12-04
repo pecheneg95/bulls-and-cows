@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 export class GamesController {
-  static allMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userIds = req.query.userIds;
 
@@ -27,7 +27,7 @@ export class GamesController {
     }
   };
 
-  static infoAboutGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static getInfoAboutGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = Number(req.userId);
       const gameId = Number(req.params.gameId);
@@ -71,7 +71,7 @@ export class GamesController {
     }
   };
 
-  static hidden = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static makeHidden = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = Number(req.userId);
       const gameId = Number(req.params.gameId);
