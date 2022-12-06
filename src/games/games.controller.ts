@@ -4,7 +4,7 @@ import { BadRequestError, ForbiddenError, GAMES_ERROR_MESSAGE, InternalServerErr
 
 import { UsersService } from '@users';
 
-import { GameForCreator, GameForOpponent, GAME_STATUS } from './games.constants';
+import { GAME_STATUS } from './games.constants';
 import { GamesService } from './games.service';
 
 export class GamesController {
@@ -33,12 +33,8 @@ export class GamesController {
 
       const { totalCount, games } = result;
 
-      const clearGames: (GameForCreator | GameForOpponent)[] = games.map((el) => {
-        if (userId === el.creatorId) {
-          return GamesService.getClearGameObjectForCreator(el);
-        }
-
-        return GamesService.getClearGameObjectForOpponent(el);
+      const clearGames = games.map((el) => {
+        return GamesService.getGameForUserByRoleInGame(userId, el);
       });
 
       res.status(200).json({ totalCount: totalCount, games: clearGames });
@@ -86,17 +82,11 @@ export class GamesController {
         throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
       }
 
-      GamesService.isMemberGame(game, userId);
+      GamesService.checkIsMemberGame(game, userId);
 
-      if (game.creatorId === userId) {
-        const gameForCreator = GamesService.getClearGameObjectForCreator(game);
+      const gameForUser = GamesService.getGameForUserByRoleInGame(userId, game);
 
-        res.status(200).json(gameForCreator);
-      } else {
-        const gameForOpponent = GamesService.getClearGameObjectForOpponent(game);
-
-        res.status(200).json(gameForOpponent);
-      }
+      res.status(200).json(gameForUser);
     } catch (error) {
       next(error);
     }
@@ -113,7 +103,17 @@ export class GamesController {
         throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
       }
 
-      GamesService.isMemberGame(game, userId);
+      GamesService.checkIsCreatorGame(game, userId);
+
+      const unfinishedGame = await GamesService.findUnfinishedGameForTwoUsers(userId, newOpponentId);
+
+      if (unfinishedGame) {
+        throw new BadRequestError(GAMES_ERROR_MESSAGE.GAME_ALREADY_CREATED);
+      }
+
+      if (game.status !== GAME_STATUS.CREATED) {
+        throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_OPPONENT_AFTER_START);
+      }
 
       if (game.creatorId === newOpponentId) {
         throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_WITH_YOURSELF);
@@ -141,7 +141,7 @@ export class GamesController {
         throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
       }
 
-      GamesService.isMemberGame(game, userId);
+      GamesService.checkIsCreatorGame(game, userId);
 
       if (game.status === GAME_STATUS.PLAYING) {
         throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_DELETE_AFTER_START);
@@ -163,7 +163,7 @@ export class GamesController {
     }
   }
 
-  static async makeHidden(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async setHidden(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const hidden = String(req.body.hidden);
       const userId = Number(req.userId);
@@ -174,7 +174,7 @@ export class GamesController {
         throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
       }
 
-      GamesService.isMemberGame(game, userId);
+      GamesService.checkIsMemberGame(game, userId);
 
       if (game.status === GAME_STATUS.PLAYING) {
         throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_HIDDEN_AFTER_START);
@@ -188,19 +188,11 @@ export class GamesController {
         throw new BadRequestError(GAMES_ERROR_MESSAGE.INCORRECT_ANSWER_LENGTH);
       }
 
-      const updatedGame = await GamesService.makeHidden(game, userId, hidden);
+      const updatedGame = await GamesService.setHidden(game, userId, hidden);
 
-      if (updatedGame.creatorId === userId) {
-        const gameForCreator = GamesService.getClearGameObjectForCreator(updatedGame);
+      const gameForUser = GamesService.getGameForUserByRoleInGame(userId, updatedGame);
 
-        res.status(200).json(gameForCreator);
-      }
-
-      if (updatedGame.opponentId === userId) {
-        const gameForOpponent = GamesService.getClearGameObjectForOpponent(updatedGame);
-
-        res.status(200).json(gameForOpponent);
-      }
+      res.status(200).json(gameForUser);
     } catch (error) {
       next(error);
     }
@@ -218,7 +210,7 @@ export class GamesController {
         throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
       }
 
-      GamesService.isMemberGame(game, userId);
+      GamesService.checkIsMemberGame(game, userId);
 
       if (game.status === GAME_STATUS.FINISHED) {
         throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_STEP_AFTER_FINISHED);
@@ -228,43 +220,34 @@ export class GamesController {
         throw new BadRequestError(GAMES_ERROR_MESSAGE.INCORRECT_STEP_LENGTH);
       }
 
-      const pastSteps = await GamesService.findStepsForGame(gameId);
+      const lastStep = await GamesService.getLastStepInGame(gameId);
 
-      if (pastSteps) {
-        if (pastSteps.length > 0 && pastSteps[pastSteps.length - 1].userId === userId) {
-          throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_YOU_TURN);
-        }
-
-        // Opponent goes first
-        if (pastSteps.length === 0 && userId === game.creatorId) {
+      if (lastStep) {
+        if (lastStep.userId === userId) {
           throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_YOU_TURN);
         }
       }
 
+      /* The game is considered started after the opponent makes a move 
+      (gives you the opportunity to change the already guessed value before making moves) */
       if (game.status === GAME_STATUS.CREATED && game.hiddenByCreator && game.hiddenByOpponent) {
         game.status = (await GamesService.changeStatus(game, GAME_STATUS.PLAYING)).status;
       }
 
-      const step = await GamesService.makeStep(userId, game, stepValue);
       const userHidden = (userId === game.creatorId ? game.hiddenByCreator : game.hiddenByOpponent) as string;
       const enemyHidden = (userId === game.creatorId ? game.hiddenByOpponent : game.hiddenByCreator) as string;
+      const curentStep = await GamesService.makeStep(userId, game, stepValue);
 
-      if (pastSteps && pastSteps.length > 0) {
-        if (
-          (userId === game.creatorId && pastSteps[pastSteps.length - 1].value === userHidden) ||
-          (userId === game.opponentId && pastSteps[pastSteps.length - 1].value === userHidden)
-        ) {
-          const lastSteps = [pastSteps[pastSteps.length - 1].value, step.value];
+      if (lastStep && lastStep.value === userHidden) {
+        game.status = (await GamesService.changeStatus(game, GAME_STATUS.FINISHED)).status;
 
-          game.status = (await GamesService.changeStatus(game, GAME_STATUS.FINISHED)).status;
-
-          await GamesService.calculateWinner(game, lastSteps);
-        }
+        await GamesService.calculateWinner(game, lastStep, curentStep);
       }
 
       res.status(200).json({
-        step: step,
+        step: curentStep,
         isCorrect: enemyHidden === stepValue,
+        isGameOver: game.status === GAME_STATUS.FINISHED,
       });
     } catch (error) {
       next(error);

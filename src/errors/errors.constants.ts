@@ -34,6 +34,8 @@ enum GAMES_ERROR_MESSAGE {
   NOT_CHANGE_SETTINGS_AFTER_START = 'You cannot change settings after game start.',
   NOT_CHANGE_SETTINGS_FINISHED = 'You cannot change settings in finished game.',
   NOT_A_MEMBER = 'You are not a member of this game.',
+  NOT_A_CREATOR = 'You are not a creator of this game.',
+  NOT_CHANGE_OPPONENT_AFTER_START = 'You cannot change opponent after game start.',
 }
 
 export { AUTH_ERROR_MESSAGE, MIDDLEWARE_ERROR_MESSAGE, USERS_ERROR_MESSAGE, GAMES_ERROR_MESSAGE };

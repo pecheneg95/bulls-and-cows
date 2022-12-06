@@ -5,16 +5,79 @@ import { Game } from './game.entity';
 import { Step } from './step.entity';
 
 export class GamesRepository {
-  static async setWinner(game: Game, winnerId?: number): Promise<Game> {
+  static async findById(id: number): Promise<Game | null> {
+    return Game.findOneBy({ id });
+  }
+
+  static async findByUserId(userId: number): Promise<Game[] | null> {
+    return Game.find({ where: [{ creatorId: userId }, { opponentId: userId }] });
+  }
+
+  static async findByUserIdWithDate(userId: number, from: Date, to: Date): Promise<Game[] | null> {
+    return Game.find({
+      where: [
+        { creatorId: userId, createdAt: Between(from, to) },
+        { opponentId: userId, createdAt: Between(from, to) },
+      ],
+    });
+  }
+
+  static async findUnfinishedGameForTwoUsers(firstUserId: number, secondUserId: number): Promise<Game | null> {
+    return Game.findOne({
+      where: [
+        { opponentId: firstUserId, creatorId: secondUserId, status: Not(GAME_STATUS.FINISHED) },
+        { opponentId: secondUserId, creatorId: firstUserId, status: Not(GAME_STATUS.FINISHED) },
+      ],
+    });
+  }
+
+  static async create(creatorId: number, opponentId: number): Promise<Game> {
+    let game = Game.create({
+      creatorId,
+      opponentId,
+    });
+
+    game = await Game.save(game);
+
+    return game;
+  }
+
+  static async delete(gameId: number): Promise<DeleteResult> {
+    return Game.delete({ id: gameId });
+  }
+
+  static async setHidden(game: Game, userId: number, hidden: string): Promise<Game> {
     const updatedGame = Object.assign({}, game);
 
-    if (winnerId) {
-      updatedGame.winnerId = winnerId;
-
-      await Game.save(updatedGame);
-
-      return updatedGame;
+    if (userId === game.creatorId) {
+      updatedGame.hiddenByCreator = hidden;
     }
+
+    if (userId === game.opponentId) {
+      updatedGame.hiddenByOpponent = hidden;
+    }
+
+    await Game.save(updatedGame);
+
+    return updatedGame;
+  }
+
+  static async changeSettings(game: Game, hiddenLength: number): Promise<Game> {
+    const updatedGame = Object.assign({}, game);
+
+    updatedGame.hiddenLength = hiddenLength;
+
+    await Game.save(updatedGame);
+
+    return updatedGame;
+  }
+
+  static async changeOpponent(game: Game, newOpponentId: number): Promise<Game> {
+    const updatedGame = Object.assign({}, game);
+
+    updatedGame.opponentId = newOpponentId;
+
+    await Game.save(updatedGame);
 
     return updatedGame;
   }
@@ -29,8 +92,18 @@ export class GamesRepository {
     return updatedGame;
   }
 
-  static async delete(gameId: number): Promise<DeleteResult> {
-    return Game.delete({ id: gameId });
+  static async setWinner(game: Game, winnerId?: number): Promise<Game> {
+    const updatedGame = Object.assign({}, game);
+
+    if (winnerId) {
+      updatedGame.winnerId = winnerId;
+
+      await Game.save(updatedGame);
+
+      return updatedGame;
+    }
+
+    return updatedGame;
   }
 
   static async getAllGamesWithParams(
@@ -70,81 +143,18 @@ export class GamesRepository {
     });
   }
 
-  static async changeSettings(game: Game, hiddenLength: number): Promise<Game> {
-    const updatedGame = Object.assign({}, game);
-
-    updatedGame.hiddenLength = hiddenLength;
-
-    await Game.save(updatedGame);
-
-    return updatedGame;
-  }
-
-  static async hidden(game: Game, userId: number, hidden: string): Promise<Game> {
-    const updatedGame = Object.assign({}, game);
-
-    if (userId === game.creatorId) {
-      updatedGame.hiddenByCreator = hidden;
-    }
-
-    if (userId === game.opponentId) {
-      updatedGame.hiddenByOpponent = hidden;
-    }
-
-    await Game.save(updatedGame);
-
-    return updatedGame;
-  }
-
-  static async changeOpponent(game: Game, newOpponentId: number): Promise<Game> {
-    const updatedGame = Object.assign({}, game);
-
-    updatedGame.opponentId = newOpponentId;
-
-    await Game.save(updatedGame);
-
-    return updatedGame;
-  }
-
-  static async create(creatorId: number, opponentId: number): Promise<Game> {
-    let game = Game.create({
-      creatorId,
-      opponentId,
-    });
-
-    game = await Game.save(game);
-
-    return game;
-  }
-
-  static async findById(id: number): Promise<Game | null> {
-    return Game.findOneBy({ id });
-  }
-
-  static async findByUserId(userId: number): Promise<Game[] | null> {
-    return Game.find({ where: [{ creatorId: userId }, { opponentId: userId }] });
-  }
-
-  static async findByUserIdWithDate(userId: number, from: Date, to: Date): Promise<Game[] | null> {
-    return Game.find({
-      where: [
-        { creatorId: userId, createdAt: Between(from, to) },
-        { opponentId: userId, createdAt: Between(from, to) },
-      ],
-    });
-  }
-
-  static async findUnfinishedGameForTwoUsers(firstUserId: number, secondUserId: number): Promise<Game | null> {
-    return Game.findOne({
-      where: [
-        { opponentId: firstUserId, creatorId: secondUserId, status: Not(GAME_STATUS.FINISHED) },
-        { opponentId: secondUserId, creatorId: firstUserId, status: Not(GAME_STATUS.FINISHED) },
-      ],
-    });
-  }
-
-  static async stepFindByGame(gameId: number): Promise<Step[] | null> {
+  static async stepFindByGameId(gameId: number): Promise<Step[] | null> {
     return Step.find({ where: { gameId: gameId } });
+  }
+
+  static async getLastStepInGame(id: number): Promise<Step | null> {
+    return Step.createQueryBuilder()
+      .select('step')
+      .from(Step, 'step')
+      .where('step."gameId" = :gameId', { gameId: id })
+      .orderBy('step.sequence', 'DESC')
+      .limit(1)
+      .getOne();
   }
 
   static async stepCreate(
@@ -166,9 +176,5 @@ export class GamesRepository {
 
     step = await Step.save(step);
     return step;
-  }
-
-  static async stepFindById(id: number): Promise<Step | null> {
-    return Step.findOneBy({ id });
   }
 }

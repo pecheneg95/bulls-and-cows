@@ -14,7 +14,7 @@ router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesC
 router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent);
 router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame);
 
-router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.makeHidden);
+router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.setHidden);
 router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.makeStep);
 
 router.patch(

@@ -8,36 +8,8 @@ import { Game } from './game.entity';
 import { Step } from './step.entity';
 
 export class GamesService {
-  static async calculateWinner(game: Game, lastSteps: string[]): Promise<Game> {
-    if (lastSteps[0] === game.hiddenByOpponent && lastSteps[1] !== game.hiddenByCreator) {
-      return GamesRepository.setWinner(game, game.creatorId);
-    }
-
-    if (lastSteps[0] !== game.hiddenByOpponent && lastSteps[1] === game.hiddenByCreator) {
-      return GamesRepository.setWinner(game, game.opponentId);
-    }
-
-    return GamesRepository.setWinner(game);
-  }
-
-  static async changeStatus(game: Game, status: GAME_STATUS): Promise<Game> {
-    return GamesRepository.changeStatus(game, status);
-  }
-
-  static async makeStep(userId: number, game: Game, stepValue: string): Promise<Step> {
-    const { bulls, cows } = GamesService.calculateBullsAndCows(userId, game, stepValue);
-
-    let sequence = 1;
-
-    if (game.steps) {
-      sequence += game.steps.length;
-    }
-
-    return GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
-  }
-
-  static async deleteGame(gameId: number): Promise<DeleteResult> {
-    return GamesRepository.delete(gameId);
+  static async findById(id: number): Promise<Game | null> {
+    return GamesRepository.findById(id);
   }
 
   static async getAllGamesWithParams(
@@ -79,20 +51,67 @@ export class GamesService {
     return GamesRepository.findByUserId(userId);
   }
 
+  static async calculateWinner(game: Game, lastStep: Step, currentStep: Step): Promise<Game> {
+    const { creatorId, opponentId, hiddenByCreator, hiddenByOpponent } = game;
+
+    if (currentStep.userId === creatorId) {
+      if (currentStep.value === hiddenByOpponent && lastStep.value !== hiddenByCreator) {
+        return GamesRepository.setWinner(game, creatorId);
+      }
+
+      if (currentStep.value !== hiddenByOpponent && lastStep.value === hiddenByCreator) {
+        return GamesRepository.setWinner(game, opponentId);
+      }
+    }
+
+    if (currentStep.userId === opponentId) {
+      if (currentStep.value === hiddenByCreator && lastStep.value !== hiddenByOpponent) {
+        return GamesRepository.setWinner(game, opponentId);
+      }
+
+      if (currentStep.value !== hiddenByCreator && lastStep.value === hiddenByOpponent) {
+        return GamesRepository.setWinner(game, creatorId);
+      }
+    }
+
+    return GamesRepository.setWinner(game);
+  }
+
+  static async changeStatus(game: Game, status: GAME_STATUS): Promise<Game> {
+    return GamesRepository.changeStatus(game, status);
+  }
+
+  static async getLastStepInGame(gameId: number): Promise<Step | null> {
+    return GamesRepository.getLastStepInGame(gameId);
+  }
+
+  static async makeStep(userId: number, game: Game, stepValue: string): Promise<Step> {
+    const { bulls, cows } = GamesService.calculateBullsAndCows(userId, game, stepValue);
+    const lastStep = await GamesRepository.getLastStepInGame(game.id);
+    console.log(lastStep);
+    let sequence = 1;
+
+    if (lastStep) {
+      sequence += lastStep.sequence;
+    }
+
+    return GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
+  }
+
+  static async deleteGame(gameId: number): Promise<DeleteResult> {
+    return GamesRepository.delete(gameId);
+  }
+
   static async changeSettings(game: Game, hiddenLength: number): Promise<Game> {
     return GamesRepository.changeSettings(game, hiddenLength);
   }
 
-  static async makeHidden(game: Game, userId: number, hidden: string): Promise<Game> {
-    return GamesRepository.hidden(game, userId, hidden);
+  static async setHidden(game: Game, userId: number, hidden: string): Promise<Game> {
+    return GamesRepository.setHidden(game, userId, hidden);
   }
 
   static async changeOpponent(game: Game, newOpponentId: number): Promise<Game> {
     return GamesRepository.changeOpponent(game, newOpponentId);
-  }
-
-  static async findById(id: number): Promise<Game | null> {
-    return GamesRepository.findById(id);
   }
 
   static async createGame(userId: number, opponentId: number): Promise<Game> {
@@ -103,14 +122,32 @@ export class GamesService {
     return GamesRepository.findUnfinishedGameForTwoUsers(userId, opponentId);
   }
 
-  static isMemberGame(game: Game, userId: number): void {
+  static async findStepsForGame(gameId: number): Promise<Step[] | null> {
+    return GamesRepository.stepFindByGameId(gameId);
+  }
+
+  static checkIsMemberGame(game: Game, userId: number): void {
     if (userId !== game.creatorId && userId !== game.opponentId) {
       throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
     }
   }
 
-  static async findStepsForGame(gameId: number): Promise<Step[] | null> {
-    return GamesRepository.stepFindByGame(gameId);
+  static checkIsCreatorGame(game: Game, userId: number): void {
+    if (userId !== game.creatorId) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_CREATOR);
+    }
+  }
+
+  static getGameForUserByRoleInGame(userId: number, game: Game): GameForCreator | GameForOpponent | Game {
+    if (userId === game.creatorId) {
+      return this.getClearGameObjectForCreator(game);
+    }
+
+    if (userId === game.opponentId) {
+      return this.getClearGameObjectForOpponent(game);
+    }
+
+    return game;
   }
 
   static getClearGameObjectForCreator(game: Game): GameForCreator {
