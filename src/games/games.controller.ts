@@ -17,16 +17,12 @@ export class GamesController {
       const offset = Number(req.query.offset);
       const limit = Number(req.query.limit);
 
-      let userIds: number[] | null;
+      let userIds: number[] | null = null;
 
-      if (userIdsFromQuery) {
-        if (!Array.isArray(userIdsFromQuery)) {
-          userIds = [Number(userIdsFromQuery)];
-        } else {
-          userIds = userIdsFromQuery.map((el: string) => Number(el));
-        }
-      } else {
-        userIds = null;
+      if (Array.isArray(userIdsFromQuery)) {
+        userIds = userIdsFromQuery.map((el: string) => Number(el));
+      } else if (userIdsFromQuery) {
+        userIds = [Number(userIdsFromQuery)];
       }
 
       const result = await GamesService.getAllGamesWithParams(userId, userIds, gameStatus, sortType, offset, limit);

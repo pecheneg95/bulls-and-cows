@@ -37,7 +37,7 @@ export class Game extends BaseEntity {
   winnerId!: number;
 
   @Column({ default: null, nullable: true })
-  hiddenByCreator!: string | null;
+  hiddenByCreator!: string;
 
   @Column({ default: null, nullable: true })
   hiddenByOpponent!: string;

@@ -122,8 +122,8 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<Stats[] | null> {
-    const leaderboard = User.createQueryBuilder()
+  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
+    const leaderboardPromise = User.createQueryBuilder()
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -152,7 +152,11 @@ export class UsersRepository {
       .limit(limit)
       .getRawMany();
 
-    return leaderboard;
+    const totalCountPromise = User.count();
+
+    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+
+    return { totalCount, leaderboard };
   }
 
   static async getLeaderboardForCompletedGamesCount(
@@ -160,8 +164,8 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<Stats[] | null> {
-    const leaderboard = User.createQueryBuilder()
+  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
+    const leaderboardPromise = User.createQueryBuilder()
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -186,7 +190,11 @@ export class UsersRepository {
       .limit(limit)
       .getRawMany();
 
-    return leaderboard;
+    const totalCountPromise = User.count();
+
+    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+
+    return { totalCount, leaderboard };
   }
 
   static async getLeaderboardForWinsCount(
@@ -194,8 +202,8 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<Stats[] | null> {
-    const leaderboard = User.createQueryBuilder()
+  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
+    const leaderboardPromise = User.createQueryBuilder()
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -216,6 +224,10 @@ export class UsersRepository {
       .limit(limit)
       .getRawMany();
 
-    return leaderboard;
+    const totalCountPromise = User.count();
+
+    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+
+    return { totalCount, leaderboard };
   }
 }

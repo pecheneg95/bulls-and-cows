@@ -47,7 +47,7 @@ export class UsersController {
       const limit = Number(req.query.limit);
 
       const leaderboard = await UsersService.getLeaderboard(sortField, dateFrom, dateTo, offset, limit);
-
+      console.log(leaderboard);
       res.status(200).json(leaderboard);
     } catch (error) {
       next(error);
