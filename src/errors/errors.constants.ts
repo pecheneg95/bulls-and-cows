@@ -5,7 +5,7 @@ enum AUTH_ERROR_MESSAGE {
 }
 
 enum MIDDLEWARE_ERROR_MESSAGE {
-  ONLY_FOR_ADMIN = 'Only for admin.',
+  NOT_AVAILABLE_FOR_YOU_ROLE = "It's not available for your role.",
   HEADER_IS_MISSING = 'Authorization header is missing.',
   INVALID_TOKEN = 'Invalid authorization token.',
   TOKEN_IS_MISSNG = 'Authorization token expired',
@@ -17,14 +17,12 @@ enum USERS_ERROR_MESSAGE {
 }
 
 enum GAMES_ERROR_MESSAGE {
-  NO_GAMES = 'You are not have a games.',
   GAME_NOT_FOUND = 'Game is not found.',
   NOT_WITH_YOURSELF = 'You can not create a game with yourself.',
   OPPONENT_NOT_FOUND = 'Opponent is not found.',
   GAME_ALREADY_CREATED = 'Game with this user is already created.',
   NOT_DELETE_AFTER_START = 'You cannot delete game after game start.',
   NOT_DELETE_FINISHED = 'You cannot delete finished game.',
-  GAME_NOT_DELETED = 'Sorry, game is not deleted.',
   NOT_CHANGE_HIDDEN_AFTER_START = 'You cannot change answer after game start.',
   NOT_CHANGE_HIDDEN_FINISHED = 'You cannot change answer in finished game.',
   INCORRECT_ANSWER_LENGTH = 'Incorrect answer length.',

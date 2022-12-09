@@ -9,9 +9,9 @@ export class AuthController {
 
       await AuthService.signUp(username, password, email);
 
-      res.status(201).json({
-        message: 'User has been created',
-      });
+      const authToken = await AuthService.login(password, email);
+
+      res.status(201).json(authToken);
     } catch (error) {
       next(error);
     }
@@ -23,10 +23,7 @@ export class AuthController {
 
       const authToken = await AuthService.login(password, email);
 
-      res.status(200).json({
-        message: 'Authentification succeeded.',
-        token: authToken,
-      });
+      res.status(200).json(authToken);
     } catch (error) {
       next(error);
     }
@@ -34,9 +31,7 @@ export class AuthController {
 
   static async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      res.status(200).json({
-        message: 'Logout succeeded.',
-      });
+      res.status(200);
     } catch (error) {
       next(error);
     }

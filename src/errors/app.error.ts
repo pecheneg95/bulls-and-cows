@@ -28,18 +28,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-export class ConflictError extends AppError {
-  constructor(message: string) {
-    super(message, 409);
-  }
-}
-
-export class InternalServerError extends AppError {
-  constructor(message: string) {
-    super(message, 500);
-  }
-}
-
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError;
 }

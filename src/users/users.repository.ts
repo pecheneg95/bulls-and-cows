@@ -26,7 +26,7 @@ export class UsersRepository {
   }
 
   static async getStats(userId: number): Promise<Stats | null> {
-    const stats = User.createQueryBuilder()
+    const stats = User.createQueryBuilder('user')
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -110,7 +110,6 @@ export class UsersRepository {
         STATS.AVERAGE_STEPS_COUNT_TO_WIN
       )
       .where('user.id = :id', { id: userId })
-      .from(User, 'user')
       .groupBy('user.id')
       .getRawOne();
 
@@ -123,7 +122,7 @@ export class UsersRepository {
     offset: number,
     limit: number
   ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder()
+    const leaderboardPromise = User.createQueryBuilder('user')
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -145,8 +144,6 @@ export class UsersRepository {
             ),
         STATS.AVERAGE_STEPS_COUNT_TO_WIN
       )
-      .from(User, 'user')
-      .groupBy('user.id')
       .orderBy('"averageStepsCountToWin"', 'DESC')
       .offset(offset)
       .limit(limit)
@@ -165,7 +162,7 @@ export class UsersRepository {
     offset: number,
     limit: number
   ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder()
+    const leaderboardPromise = User.createQueryBuilder('user')
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -183,7 +180,6 @@ export class UsersRepository {
             .andWhere('"createdAt" <= :to', { to: dateTo }),
         STATS.COMPLETED_GAMES_COUNT
       )
-      .from(User, 'user')
       .groupBy('user.id')
       .orderBy('"completedGamesCount"', 'DESC')
       .offset(offset)
@@ -203,7 +199,7 @@ export class UsersRepository {
     offset: number,
     limit: number
   ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder()
+    const leaderboardPromise = User.createQueryBuilder('user')
       .select('user.id')
       .addSelect('user.username')
       .addSelect(
@@ -217,7 +213,6 @@ export class UsersRepository {
             .andWhere('"createdAt" <= :to', { to: dateTo }),
         STATS.WINS_COUNT
       )
-      .from(User, 'user')
       .groupBy('user.id')
       .orderBy('"winsCount"', 'DESC')
       .offset(offset)

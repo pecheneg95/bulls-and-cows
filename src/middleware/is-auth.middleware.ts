@@ -2,10 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 
 import { BadRequestError, UnauthorizedError, MIDDLEWARE_ERROR_MESSAGE } from '@errors';
-import { JWT_SECRET } from '@auth';
 
 export const isAuth = (req: Request, res: Response, next: NextFunction): void => {
   try {
+    const secret = process.env.JWT_SECRET as string;
     const authHeader = req.get('Authorization');
 
     if (!authHeader) {
@@ -14,7 +14,7 @@ export const isAuth = (req: Request, res: Response, next: NextFunction): void =>
 
     const [, token] = authHeader.split(' '); // 'Bearer {{token}}'
 
-    const verifiedToken = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & { userId: number; role: string };
+    const verifiedToken = jwt.verify(token, secret) as jwt.JwtPayload & { userId: number; role: string };
 
     req.userId = verifiedToken.userId;
     req.role = verifiedToken.role;

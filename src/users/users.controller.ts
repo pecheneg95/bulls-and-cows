@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { NotFoundError, USERS_ERROR_MESSAGE } from '@errors';
-
 import { STATS } from './users.constants';
 import { UsersService } from './users.service';
 
@@ -10,10 +8,6 @@ export class UsersController {
     try {
       const userId = Number(req.userId);
       const user = await UsersService.findById(userId);
-
-      if (!user) {
-        throw new NotFoundError(USERS_ERROR_MESSAGE.NOT_FOUND);
-      }
 
       res.status(200).json(user);
     } catch (error) {
@@ -24,12 +18,6 @@ export class UsersController {
   static async getUserStats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = Number(req.params.userId);
-      const user = await UsersService.findById(userId);
-
-      if (!user) {
-        throw new NotFoundError(USERS_ERROR_MESSAGE.NOT_FOUND);
-      }
-
       const stats = await UsersService.getStats(userId);
 
       res.status(200).json(stats);
@@ -47,7 +35,7 @@ export class UsersController {
       const limit = Number(req.query.limit);
 
       const leaderboard = await UsersService.getLeaderboard(sortField, dateFrom, dateTo, offset, limit);
-      console.log(leaderboard);
+
       res.status(200).json(leaderboard);
     } catch (error) {
       next(error);

@@ -1,10 +1,17 @@
 import { User } from './user.entity';
 import { UsersRepository } from 'users/users.repository';
 import { STATS, Stats } from './users.constants';
+import { NotFoundError, USERS_ERROR_MESSAGE } from '@errors';
 
 export class UsersService {
   static async findById(id: number): Promise<User | null> {
-    return UsersRepository.findById(id);
+    const user = await UsersRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundError(USERS_ERROR_MESSAGE.NOT_FOUND);
+    }
+
+    return user;
   }
 
   static async getStats(userId: number): Promise<Stats | null> {

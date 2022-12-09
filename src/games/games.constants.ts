@@ -11,14 +11,14 @@ enum GAME_SORT_BY {
 }
 
 enum SORT_DIRECTION {
-  ASC = 'asc',
-  DESC = 'desc',
+  ASC = 'ASC',
+  DESC = 'DESC',
 }
 
-const MIN_HIDDEN_LENGTH = 4;
+const DEFAULT_HIDDEN_LENGTH = 4;
 
 type GameForCreator = Omit<Game, 'hiddenByOpponent'>;
 
 type GameForOpponent = Omit<Game, 'hiddenByCreator'>;
 
-export { GAME_STATUS, GAME_SORT_BY, SORT_DIRECTION, MIN_HIDDEN_LENGTH, GameForCreator, GameForOpponent };
+export { GAME_STATUS, GAME_SORT_BY, SORT_DIRECTION, DEFAULT_HIDDEN_LENGTH, GameForCreator, GameForOpponent };

@@ -1,18 +1,18 @@
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
-import { ConflictError, UnauthorizedError, AUTH_ERROR_MESSAGE } from '@errors';
+import { UnauthorizedError, AUTH_ERROR_MESSAGE, BadRequestError } from '@errors';
 
 import { UsersRepository } from '@users';
 
-import { SALT, JWT_SECRET } from './auth.constants';
+import { EXPIRES_IN, SALT } from './auth.constants';
 
 export class AuthService {
   static async signUp(username: string, password: string, email: string): Promise<void> {
     const isEmailUsed = !!(await UsersRepository.findByEmail(email));
 
     if (isEmailUsed) {
-      throw new ConflictError(AUTH_ERROR_MESSAGE.EMAIL_IN_USE);
+      throw new BadRequestError(AUTH_ERROR_MESSAGE.EMAIL_IN_USE);
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT);
@@ -21,6 +21,7 @@ export class AuthService {
   }
 
   static async login(password: string, email: string): Promise<string> {
+    const secret = process.env.JWT_SECRET as string;
     const user = await UsersRepository.findByEmail(email);
 
     if (!user) {
@@ -33,6 +34,6 @@ export class AuthService {
       throw new UnauthorizedError(AUTH_ERROR_MESSAGE.INVALID_PASSWORD);
     }
 
-    return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+    return jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: EXPIRES_IN });
   }
 }

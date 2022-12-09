@@ -1,6 +1,6 @@
-import { Between, DeleteResult, In, Not } from 'typeorm';
+import { Between, Brackets, DeleteResult, Not } from 'typeorm';
 
-import { GAME_STATUS } from './games.constants';
+import { GAME_STATUS, SORT_DIRECTION } from './games.constants';
 import { Game } from './game.entity';
 import { Step } from './step.entity';
 
@@ -109,38 +109,42 @@ export class GamesRepository {
   static async getAllGamesWithParams(
     userId: number,
     userIds: number[] | null = null,
-    gameStatus: GAME_STATUS | null = null
-  ): Promise<Game[] | null> {
-    if (userIds && gameStatus) {
-      return Game.find({
-        where: [
-          { creatorId: userId, opponentId: In(userIds), status: gameStatus },
-          { creatorId: In(userIds), opponentId: userId, status: gameStatus },
-        ],
-      });
+    gameStatus: GAME_STATUS | null = null,
+    sortType: SORT_DIRECTION | null,
+    offset = 0,
+    limit = 20
+  ): Promise<[Game[], number] | null> {
+    const query = Game.createQueryBuilder('game')
+      .select('game')
+      .where(
+        new Brackets((qb) => {
+          qb.where('game.creatorId = :id', { id: userId }).orWhere('game.opponentId = :id', { id: userId });
+        })
+      );
+
+    if (userIds) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('game."creatorId" IN (:...ids)', { ids: userIds }).orWhere('game."opponentId" IN (:...ids)', {
+            ids: userIds,
+          });
+        })
+      );
     }
 
-    if (userIds && !gameStatus) {
-      return Game.find({
-        where: [
-          { creatorId: userId, opponentId: In(userIds) },
-          { creatorId: In(userIds), opponentId: userId },
-        ],
-      });
+    if (gameStatus) {
+      query.andWhere('game.status = :status', { status: gameStatus });
     }
 
-    if (!userIds && gameStatus) {
-      return Game.find({
-        where: [
-          { creatorId: userId, status: gameStatus },
-          { opponentId: userId, status: gameStatus },
-        ],
-      });
+    if (sortType === SORT_DIRECTION.DESC) {
+      query.orderBy('game."createdAt"', 'DESC');
+    } else {
+      query.orderBy('game."createdAt"', 'ASC');
     }
 
-    return Game.find({
-      where: [{ creatorId: userId }, { opponentId: userId }],
-    });
+    query.offset(offset).limit(limit);
+
+    return query.getManyAndCount();
   }
 
   static async stepFindByGameId(gameId: number): Promise<Step[] | null> {
@@ -148,9 +152,8 @@ export class GamesRepository {
   }
 
   static async getLastStepInGame(id: number): Promise<Step | null> {
-    return Step.createQueryBuilder()
+    return Step.createQueryBuilder('step')
       .select('step')
-      .from(Step, 'step')
       .where('step."gameId" = :gameId', { gameId: id })
       .orderBy('step.sequence', 'DESC')
       .limit(1)
@@ -175,6 +178,7 @@ export class GamesRepository {
     });
 
     step = await Step.save(step);
+
     return step;
   }
 }

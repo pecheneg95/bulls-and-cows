@@ -1,16 +1,17 @@
 import * as express from 'express';
 import { Application } from 'express';
 
-import { isAuth, isAdmin, validatePayload } from '@middleware';
+import { isAuth, checkRole, validatePayload } from '@middleware';
 
 import { GamesValidation } from './games.validation';
 import { GamesController } from './games.controller';
+import { USER_ROLE } from '@users';
 
 const router = express.Router();
 router.get('/', ...GamesValidation.allMyGame, validatePayload, GamesController.getAllMyGames);
 router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame);
 
-router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.getInfoAboutGame);
+router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.getGame);
 router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent);
 router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame);
 
@@ -19,7 +20,7 @@ router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesCont
 
 router.patch(
   '/digits-number/:gameId',
-  isAdmin,
+  checkRole(USER_ROLE.ADMIN),
   ...GamesValidation.changeSettings,
   validatePayload,
   GamesController.changeSettings
