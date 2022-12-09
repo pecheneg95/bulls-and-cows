@@ -1,7 +1,7 @@
 import { CreateDateColumn, Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn } from 'typeorm';
 
-import { User } from 'users/user.entity';
-import { Game } from 'games/game.entity';
+import { User } from '../users/user.entity';
+import { Game } from './game.entity';
 
 @Entity('step')
 export class Step extends BaseEntity {

@@ -13,10 +13,9 @@
     "type-check": "tsc --pretty --noEmit",
     "audit": "npx audit-ci --config audit-ci.json",
     "typeorm": "typeorm-ts-node-esm",
-    "migrate:create": "npm run typeorm migration:create ./src/migrations/ -- -n",
+    "migrate:create-createAdmin": "npm run typeorm migration:create ./src/migrations/createAdmin",
     "migrate:run": "npm run typeorm migration:run -- -d ./src/data-source.ts",
-    "migrate:revert": "npm run typeorm migration:revert -- -d ./src/data-source.ts",
-    "migrate:generate": "npm run typeorm migration:generate ./src/migrations/ -- -d ./src/data-source.ts"
+    "migrate:revert": "npm run typeorm migration:revert -- -d ./src/data-source.ts"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",

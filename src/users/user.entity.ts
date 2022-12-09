@@ -8,7 +8,8 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Game, Step } from '@games';
+import { Game } from '../games/game.entity';
+import { Step } from '../games/step.entity';
 
 import { USER_ROLE } from './users.constants';
 
