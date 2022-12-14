@@ -1,13 +1,12 @@
-import { CreateDateColumn, Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+
+import { BasicEntity } from './../types/basic.entity';
 
 import { User } from '../users/user.entity';
 import { Game } from './game.entity';
 
 @Entity('step')
-export class Step extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
+export class Step extends BasicEntity {
   @Column()
   userId!: number;
 
@@ -25,9 +24,6 @@ export class Step extends BaseEntity {
 
   @Column()
   cows!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
 
   @ManyToOne(() => User, (user) => user.steps, {
     onDelete: 'CASCADE',

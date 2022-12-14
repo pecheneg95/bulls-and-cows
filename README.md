@@ -289,7 +289,7 @@ GET api/v1/games
 Request Query DTO {
   userIds?: number[],
   status?: GAME_STATUS,
-  sort[type]?: SORT_DIRECTION,
+  sortDirection: SORT_DIRECTION,
   sort[field]: GAME_SORT_BY,
   offset: number,
   limit: number,

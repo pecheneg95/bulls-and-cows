@@ -3,7 +3,11 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 
 export class AuthController {
-  static async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async signUp(
+    req: Request<unknown, unknown, { username: string; password: string; email: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { username, password, email } = req.body;
 
@@ -17,7 +21,11 @@ export class AuthController {
     }
   }
 
-  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async login(
+    req: Request<unknown, unknown, { password: string; email: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const { password, email } = req.body;
 

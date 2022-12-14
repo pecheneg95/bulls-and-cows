@@ -1,3 +1,6 @@
+const DEFAULT_USERS_OFFSET = 0;
+const DEFAULT_USERS_LIMIT = 20;
+
 enum USER_ROLE {
   USER = 'user',
   ADMIN = 'admin',
@@ -28,4 +31,4 @@ type Stats = {
   [STATS.AVERAGE_STEPS_COUNT_TO_WIN]: number;
 };
 
-export { USER_ROLE, STATS, SORT_DIRECTION, Stats };
+export { DEFAULT_USERS_OFFSET, DEFAULT_USERS_LIMIT, USER_ROLE, STATS, SORT_DIRECTION, Stats };

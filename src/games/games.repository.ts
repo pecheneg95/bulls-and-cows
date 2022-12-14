@@ -110,10 +110,10 @@ export class GamesRepository {
     userId: number,
     userIds: number[] | null = null,
     gameStatus: GAME_STATUS | null = null,
-    sortType: SORT_DIRECTION | null,
-    offset = 0,
-    limit = 20
-  ): Promise<[Game[], number] | null> {
+    sortDirection: SORT_DIRECTION | null,
+    offset: number,
+    limit: number
+  ): Promise<[Game[], number]> {
     const query = Game.createQueryBuilder('game')
       .select('game')
       .where(
@@ -136,11 +136,7 @@ export class GamesRepository {
       query.andWhere('game.status = :status', { status: gameStatus });
     }
 
-    if (sortType === SORT_DIRECTION.DESC) {
-      query.orderBy('game."createdAt"', 'DESC');
-    } else {
-      query.orderBy('game."createdAt"', 'ASC');
-    }
+    query.orderBy('game."createdAt"', sortDirection as 'ASC' | 'DESC');
 
     query.offset(offset).limit(limit);
 
@@ -148,7 +144,7 @@ export class GamesRepository {
   }
 
   static async stepFindByGameId(gameId: number): Promise<Step[] | null> {
-    return Step.find({ where: { gameId: gameId } });
+    return Step.find({ where: { gameId } });
   }
 
   static async getLastStepInGame(id: number): Promise<Step | null> {
@@ -156,7 +152,6 @@ export class GamesRepository {
       .select('step')
       .where('step."gameId" = :gameId', { gameId: id })
       .orderBy('step.sequence', 'DESC')
-      .limit(1)
       .getOne();
   }
 

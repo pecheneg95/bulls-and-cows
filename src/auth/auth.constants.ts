@@ -3,6 +3,6 @@ const MAX_USERNAME_LENGTH = 256;
 const MIN_PASSWORD_LENGTH = 8;
 const PASSWORD_FORMAT = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).+[!@#$%^&*()_+=]/gm;
 const SALT = 12;
-const EXPIRES_IN = '24h';
+const EXPIRES_IN = '1h';
 
 export { MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_FORMAT, SALT, EXPIRES_IN };

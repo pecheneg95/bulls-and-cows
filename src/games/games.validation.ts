@@ -30,7 +30,7 @@ export class GamesValidation {
       .optional()
       .custom((value) => Object.values(GAME_SORT_BY).includes(value))
       .withMessage('Value is not includes enum GAME_SORT_BY'),
-    query('sort[type]')
+    query('sortDirection')
       .optional()
       .custom((value) => Object.values(SORT_DIRECTION).includes(value))
       .withMessage('Value is not includes enum SORT_DIRECTION'),

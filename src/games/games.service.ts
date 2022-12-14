@@ -30,28 +30,31 @@ export class GamesService {
   static async getAllGamesWithParams(
     userId: number,
     userIds: number[] | null,
-    gameStatus: GAME_STATUS,
-    sortType: SORT_DIRECTION,
+    gameStatus: GAME_STATUS | null,
+    sortDirection: SORT_DIRECTION | null,
     offset: number,
     limit: number
   ): Promise<{
     totalCount: number;
     games: (Game | GameForCreator | GameForOpponent)[];
   }> {
-    const games = await GamesRepository.getAllGamesWithParams(userId, userIds, gameStatus, sortType, offset, limit);
+    const games = await GamesRepository.getAllGamesWithParams(
+      userId,
+      userIds,
+      gameStatus,
+      sortDirection,
+      offset,
+      limit
+    );
 
-    if (games) {
-      const result = {
-        totalCount: games[1],
-        games: games[0].map((el) => {
-          return this.getGameForUserByRoleInGame(userId, el);
-        }),
-      };
+    const result = {
+      totalCount: games[1],
+      games: games[0].map((el) => {
+        return this.getGameForUserByRoleInGame(userId, el);
+      }),
+    };
 
-      return result;
-    }
-
-    return { totalCount: 0, games: [] };
+    return result;
   }
 
   static async getAllGamesForUser(userId: number, from?: Date, to?: Date): Promise<Game[] | null> {
@@ -115,28 +118,14 @@ export class GamesService {
       throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
     }
 
-    const isMember = this.isMemberGame(game, userId);
-
-    if (!isMember) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
-    }
-
-    if (game.status === GAME_STATUS.FINISHED) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_STEP_AFTER_FINISHED);
-    }
-
-    if (stepValue.length !== game.hiddenLength) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.INCORRECT_STEP_LENGTH);
-    }
+    this.isMemberGameOrFail(game, userId);
+    this.gameIsNotFinishedOrFail(game);
+    this.stepValueLengthIsValidOrFail(game, stepValue);
 
     const lastStep = await this.getLastStepInGame(gameId);
 
-    if (lastStep && lastStep.userId === userId) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_YOU_TURN);
-    }
+    this.isUserTurnOrFail(lastStep, userId);
 
-    /* The game is considered started after the opponent makes a move 
-    (gives you the opportunity to change the already guessed value before making moves) */
     if (game.status === GAME_STATUS.CREATED && game.hiddenByCreator && game.hiddenByOpponent) {
       game.status = (await this.changeStatus(game, GAME_STATUS.PLAYING)).status;
     }
@@ -146,8 +135,8 @@ export class GamesService {
 
     const curentStep = await GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
 
-    const userHidden = (userId === game.creatorId ? game.hiddenByCreator : game.hiddenByOpponent) as string;
-    const enemyHidden = (userId === game.creatorId ? game.hiddenByOpponent : game.hiddenByCreator) as string;
+    const userHidden = userId === game.creatorId ? game.hiddenByCreator : game.hiddenByOpponent;
+    const enemyHidden = userId === game.creatorId ? game.hiddenByOpponent : game.hiddenByCreator;
 
     if (lastStep && lastStep.value === userHidden) {
       game.status = (await this.changeStatus(game, GAME_STATUS.FINISHED)).status;
@@ -169,11 +158,7 @@ export class GamesService {
       throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
     }
 
-    const isCreator = this.isCreatorGame(game, userId);
-
-    if (!isCreator) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_CREATOR);
-    }
+    this.isCreatorGameOrFail(game, userId);
 
     if (game.status === GAME_STATUS.PLAYING) {
       throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_DELETE_AFTER_START);
@@ -215,11 +200,7 @@ export class GamesService {
       throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
     }
 
-    const isMember = this.isMemberGame(game, userId);
-
-    if (!isMember) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
-    }
+    this.isMemberGameOrFail(game, userId);
 
     if (game.status === GAME_STATUS.PLAYING) {
       throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_HIDDEN_AFTER_START);
@@ -245,11 +226,7 @@ export class GamesService {
       throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
     }
 
-    const isCreator = this.isCreatorGame(game, userId);
-
-    if (!isCreator) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_CREATOR);
-    }
+    this.isCreatorGameOrFail(game, userId);
 
     const unfinishedGame = await this.findUnfinishedGameForTwoUsers(userId, newOpponentId);
 
@@ -300,20 +277,8 @@ export class GamesService {
     return GamesRepository.stepFindByGameId(gameId);
   }
 
-  static isMemberGame(game: Game, userId: number): boolean {
-    return userId === game.creatorId || userId === game.opponentId;
-  }
-
-  static isCreatorGame(game: Game, userId: number): boolean {
-    return userId === game.creatorId;
-  }
-
   static getGameForUserByRoleInGame(userId: number, game: Game): GameForCreator | GameForOpponent | Game {
-    const isMember = this.isMemberGame(game, userId);
-
-    if (!isMember) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
-    }
+    this.isMemberGameOrFail(game, userId);
 
     if (userId === game.creatorId) {
       return this.clearGameObjectForCreator(game);
@@ -359,5 +324,33 @@ export class GamesService {
     });
 
     return { bulls, cows };
+  }
+
+  static isMemberGameOrFail(game: Game, userId: number): void {
+    if (!(userId === game.creatorId || userId === game.opponentId)) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_MEMBER);
+    }
+  }
+
+  static isCreatorGameOrFail(game: Game, userId: number): void {
+    if (!(userId === game.creatorId)) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_A_CREATOR);
+    }
+  }
+  static gameIsNotFinishedOrFail(game: Game): void {
+    if (game.status === GAME_STATUS.FINISHED) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_STEP_AFTER_FINISHED);
+    }
+  }
+
+  static stepValueLengthIsValidOrFail(game: Game, stepValue: string): void {
+    if (stepValue.length !== game.hiddenLength) {
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.INCORRECT_STEP_LENGTH);
+    }
+  }
+  static isUserTurnOrFail(lastStep: Step | null, userId: number): void {
+    if (lastStep && lastStep.userId === userId) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_YOU_TURN);
+    }
   }
 }

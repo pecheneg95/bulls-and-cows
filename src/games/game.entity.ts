@@ -1,25 +1,13 @@
-import {
-  CreateDateColumn,
-  UpdateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
 import { User } from '../users/user.entity';
 
 import { Step } from './step.entity';
 import { GAME_STATUS, DEFAULT_HIDDEN_LENGTH } from './games.constants';
+import { BasicEntity } from './../types/basic.entity';
 
 @Entity('game')
-export class Game extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
+export class Game extends BasicEntity {
   @Column()
   creatorId!: number;
 
@@ -44,12 +32,6 @@ export class Game extends BaseEntity {
 
   @Column({ default: DEFAULT_HIDDEN_LENGTH })
   hiddenLength!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
 
   @ManyToOne(() => User, (user) => user.createdGames, {
     onDelete: 'CASCADE',

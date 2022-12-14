@@ -1,4 +1,4 @@
-enum AUTH_ERROR_MESSAGE {
+enum AUTHENTIFICATION_ERROR_MESSAGE {
   EMAIL_IN_USE = 'Email already in use.',
   EMAIL_NOT_FOUND = 'Authentification failed. User with this email is not found.',
   INVALID_PASSWORD = 'Authentification failed. Invalid password.',
@@ -6,10 +6,13 @@ enum AUTH_ERROR_MESSAGE {
 
 enum MIDDLEWARE_ERROR_MESSAGE {
   NOT_AVAILABLE_FOR_YOU_ROLE = "It's not available for your role.",
+  API_ENDPOINT_NOT_FOUND = 'API endpoint not found',
+}
+
+enum AUTHORIZATION_ERROR_MESSAGE {
   HEADER_IS_MISSING = 'Authorization header is missing.',
   INVALID_TOKEN = 'Invalid authorization token.',
   TOKEN_IS_MISSNG = 'Authorization token expired',
-  API_ENDPOINT_NOT_FOUND = 'API endpoint not found',
 }
 
 enum USERS_ERROR_MESSAGE {
@@ -36,4 +39,10 @@ enum GAMES_ERROR_MESSAGE {
   NOT_CHANGE_OPPONENT_AFTER_START = 'You cannot change opponent after game start.',
 }
 
-export { AUTH_ERROR_MESSAGE, MIDDLEWARE_ERROR_MESSAGE, USERS_ERROR_MESSAGE, GAMES_ERROR_MESSAGE };
+export {
+  AUTHENTIFICATION_ERROR_MESSAGE,
+  MIDDLEWARE_ERROR_MESSAGE,
+  AUTHORIZATION_ERROR_MESSAGE,
+  USERS_ERROR_MESSAGE,
+  GAMES_ERROR_MESSAGE,
+};

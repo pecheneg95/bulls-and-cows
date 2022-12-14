@@ -26,92 +26,39 @@ export class UsersRepository {
   }
 
   static async getStats(userId: number): Promise<Stats | null> {
-    const stats = User.createQueryBuilder('user')
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = :id', { id: userId }).orWhere('"opponentId" = :id', { id: userId });
-              })
-            ),
-        STATS.GAMES_COUNT
-      )
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = :id', { id: userId }).orWhere('"opponentId" = :id', { id: userId });
-              })
-            )
-            .andWhere('status = :status', { status: GAME_STATUS.FINISHED }),
-        STATS.COMPLETED_GAMES_COUNT
-      )
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"winnerId" = :id', { id: userId }),
-        STATS.WINS_COUNT
-      )
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = :id', { id: userId }).orWhere('"opponentId" = :id', { id: userId });
-              })
-            )
-            .andWhere('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"winnerId" != :id', { id: userId })
-            .andWhere('"winnerId" IS NOT NULL'),
-        STATS.LOSSES_COUNT
-      )
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = :id', { id: userId }).orWhere('"opponentId" = :id', { id: userId });
-              })
-            )
-            .andWhere('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"winnerId" IS NULL'),
-        STATS.DRAW_COUNT
-      )
-      .addSelect(
-        (qb) =>
-          qb
-            .select('ROUND(AVG("winStepsCount"))')
-            .from(
-              (qb) =>
-                qb
-                  .select('COUNT(*)', 'winStepsCount')
-                  .from(Game, 'game')
-                  .innerJoin(Step, 'step', 'game.id = step."gameId"')
-                  .where('game.status = :status', { status: GAME_STATUS.FINISHED })
-                  .andWhere('game."winnerId" = :id', { id: userId })
-                  .andWhere('step."userId" = :id', { id: userId }),
-              'stepsCountByGame'
-            ),
-        STATS.AVERAGE_STEPS_COUNT_TO_WIN
-      )
-      .where('user.id = :id', { id: userId })
-      .groupBy('user.id')
-      .getRawOne();
+    const stats = User.query(
+      `SELECT id AS "userId", 
+      username,
+      (SELECT COUNT(*) FROM game WHERE "creatorId" = $1 OR "opponentId" = $1) AS "gamesCount",
+      (SELECT COUNT(*) FROM game WHERE status = 'finished' AND "winnerId" = $1) AS "winsCount",
+      (SELECT COUNT(*)
+        FROM game
+        WHERE status = 'finished'
+          AND "winnerId" != $1 AND "winnerId" IS NOT NULL
+          AND ("creatorId" = $1 OR "opponentId" = $1)
+      ) AS "losesCount",
+      (SELECT COUNT(*)
+       FROM game
+        WHERE status = 'finished' AND "winnerId" IS NULL
+         AND ("creatorId" = $1 OR "opponentId" = $1)
+      ) AS "drawsCount",
+      (SELECT COUNT(*)
+        FROM game
+        WHERE status = 'finished' AND ("creatorId" = $1 OR "opponentId" = $1)
+      ) AS "finishedGamesCount",
+      (SELECT ROUND(AVG("winStepsCount"), 1) FROM 
+  	 	  (SELECT COUNT(*) AS "winStepsCount"
+     		  FROM game AS g
+     		  INNER JOIN step AS s ON g.id = s."gameId"
+      	  WHERE g.status = 'finished' AND g."winnerId" = $1
+      	  AND s."userId" = $1
+      	  GROUP BY g.id
+    	  ) AS "stepsCountByGame"
+      ) AS "averageStepsToWin"
+      FROM "user"
+      where "user".id = $1;`,
+      [userId]
+    );
 
     return stats;
   }

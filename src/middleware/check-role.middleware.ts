@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response, Request } from 'express';
 
 import { ForbiddenError, MIDDLEWARE_ERROR_MESSAGE } from '@errors';
 import { USER_ROLE } from '@users';

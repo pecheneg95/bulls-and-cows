@@ -1,27 +1,48 @@
-import { NextFunction, Request, Response } from 'express';
-
-import { GAME_STATUS } from './games.constants';
+import { NextFunction, Response, Request } from 'express';
+import { DEFAULT_GAMES_LIMIT, DEFAULT_GAMES_OFFSET, GAME_STATUS, SORT_DIRECTION } from './games.constants';
 import { GamesService } from './games.service';
 
 export class GamesController {
-  static async getAllMyGames(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getAllMyGames(
+    req: Request<
+      unknown,
+      unknown,
+      unknown,
+      {
+        userIds: string | string[];
+        status: GAME_STATUS;
+        sortDirection: SORT_DIRECTION;
+        offset: string;
+        limit: string;
+      }
+    >,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const userIdsFromQuery = req.query.userIds as string | string[];
-      const gameStatus = req.query.status as GAME_STATUS;
-      const sortType = req.query.sort?.['type'];
-      const offset = Number(req.query.offset) || 0;
-      const limit = Number(req.query.limit) || 20;
+      const userId = req.userId;
+      const userIdsFromQuery = req.query.userIds;
+      const gameStatus = req.query.status;
+      const sortDirection = req.query.sortDirection;
+      const offset = Number(req.query.offset) || DEFAULT_GAMES_OFFSET;
+      const limit = Number(req.query.limit) || DEFAULT_GAMES_LIMIT;
 
       let userIds: number[] | null = null;
 
       if (Array.isArray(userIdsFromQuery)) {
-        userIds = userIdsFromQuery.map((el: string) => Number(el));
+        userIds = userIdsFromQuery.map((el) => Number(el));
       } else if (userIdsFromQuery) {
         userIds = [Number(userIdsFromQuery)];
       }
 
-      const result = await GamesService.getAllGamesWithParams(userId, userIds, gameStatus, sortType, offset, limit);
+      const result = await GamesService.getAllGamesWithParams(
+        userId,
+        userIds,
+        gameStatus,
+        sortDirection,
+        offset,
+        limit
+      );
 
       res.status(200).json(result);
     } catch (error) {
@@ -29,10 +50,14 @@ export class GamesController {
     }
   }
 
-  static async createGame(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async createGame(
+    req: Request<unknown, unknown, { opponentId: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const opponentId = Number(req.body.opponentId);
-      const creatorId = Number(req.userId);
+      const creatorId = req.userId;
 
       const game = await GamesService.createGame(creatorId, opponentId);
 
@@ -42,11 +67,14 @@ export class GamesController {
     }
   }
 
-  static async getGame(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getGame(
+    req: Request<{ gameId: string }, unknown, unknown, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const userId = Number(req.userId);
+      const userId = req.userId;
       const gameId = Number(req.params.gameId);
-      console.log(req.role);
 
       const game = await GamesService.getGame(gameId, userId);
 
@@ -56,9 +84,13 @@ export class GamesController {
     }
   }
 
-  static async changeOpponent(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async changeOpponent(
+    req: Request<{ gameId: string }, unknown, { opponentId: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const userId = Number(req.userId);
+      const userId = req.userId;
       const newOpponentId = Number(req.body.opponentId);
       const gameId = Number(req.params.gameId);
 
@@ -70,9 +102,13 @@ export class GamesController {
     }
   }
 
-  static async deleteGame(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async deleteGame(
+    req: Request<{ gameId: string }, unknown, unknown, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const userId = Number(req.userId);
+      const userId = req.userId;
       const gameId = Number(req.params.gameId);
 
       await GamesService.deleteGame(gameId, userId);
@@ -83,10 +119,14 @@ export class GamesController {
     }
   }
 
-  static async setHidden(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async setHidden(
+    req: Request<{ gameId: string }, unknown, { hidden: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const hidden = String(req.body.hidden);
-      const userId = Number(req.userId);
+      const hidden = req.body.hidden;
+      const userId = req.userId;
       const gameId = Number(req.params.gameId);
 
       const updatedGame = await GamesService.setHidden(gameId, userId, hidden);
@@ -97,11 +137,15 @@ export class GamesController {
     }
   }
 
-  static async makeStep(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async makeStep(
+    req: Request<{ gameId: string }, unknown, { stepValue: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const userId = Number(req.userId);
+      const userId = req.userId;
       const gameId = Number(req.params.gameId);
-      const stepValue = String(req.body.stepValue);
+      const stepValue = req.body.stepValue;
 
       const result = await GamesService.makeStep(userId, gameId, stepValue);
 
@@ -111,7 +155,11 @@ export class GamesController {
     }
   }
 
-  static async changeSettings(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async changeSettings(
+    req: Request<{ gameId: string }, unknown, { hiddenLength: string }, unknown>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const hiddenLength = Number(req.body.hiddenLength);
       const gameId = Number(req.params.gameId);
