@@ -1,15 +1,18 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 
 import { BasicEntity } from './../types/basic.entity';
 
-import { User } from '../users/user.entity';
+import { User } from './../users/user.entity';
+
 import { Game } from './game.entity';
 
 @Entity('step')
 export class Step extends BasicEntity {
+  @Index()
   @Column()
   userId!: number;
 
+  @Index()
   @Column()
   gameId!: number;
 

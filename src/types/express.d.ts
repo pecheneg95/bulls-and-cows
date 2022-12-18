@@ -4,10 +4,3 @@ declare namespace Express {
     role: string;
   }
 }
-
-/*
-1. Params
-2. Response
-3. Body
-4. Query
-*/

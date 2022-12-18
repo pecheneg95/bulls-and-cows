@@ -8,7 +8,7 @@ import { UsersRepository } from '@users';
 import { EXPIRES_IN, SALT } from './auth.constants';
 
 export class AuthService {
-  static async signUp(username: string, password: string, email: string): Promise<void> {
+  static async signUp(username: string, password: string, email: string): Promise<string> {
     const isEmailUsed = !!(await UsersRepository.findByEmail(email));
 
     if (isEmailUsed) {
@@ -16,8 +16,10 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT);
+    const user = await UsersRepository.create(username, hashedPassword, email);
+    const secret = process.env.JWT_SECRET as string;
 
-    await UsersRepository.create(username, hashedPassword, email);
+    return jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: EXPIRES_IN });
   }
 
   static async login(password: string, email: string): Promise<string> {

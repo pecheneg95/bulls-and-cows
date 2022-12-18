@@ -2,7 +2,6 @@ import { Between, Brackets, DeleteResult, Not } from 'typeorm';
 
 import { GAME_STATUS, SORT_DIRECTION } from './games.constants';
 import { Game } from './game.entity';
-import { Step } from './step.entity';
 
 export class GamesRepository {
   static async findById(id: number): Promise<Game | null> {
@@ -92,27 +91,23 @@ export class GamesRepository {
     return updatedGame;
   }
 
-  static async setWinner(game: Game, winnerId?: number): Promise<Game> {
+  static async setWinner(game: Game, winnerId: number): Promise<Game> {
     const updatedGame = Object.assign({}, game);
 
-    if (winnerId) {
-      updatedGame.winnerId = winnerId;
+    updatedGame.winnerId = winnerId;
 
-      await Game.save(updatedGame);
-
-      return updatedGame;
-    }
+    await Game.save(updatedGame);
 
     return updatedGame;
   }
 
   static async getAllGamesWithParams(
     userId: number,
-    userIds: number[] | null = null,
-    gameStatus: GAME_STATUS | null = null,
-    sortDirection: SORT_DIRECTION | null,
     offset: number,
-    limit: number
+    limit: number,
+    userIds?: number[],
+    gameStatus?: GAME_STATUS,
+    sortDirection?: SORT_DIRECTION
   ): Promise<[Game[], number]> {
     const query = Game.createQueryBuilder('game')
       .select('game')
@@ -141,39 +136,5 @@ export class GamesRepository {
     query.offset(offset).limit(limit);
 
     return query.getManyAndCount();
-  }
-
-  static async stepFindByGameId(gameId: number): Promise<Step[] | null> {
-    return Step.find({ where: { gameId } });
-  }
-
-  static async getLastStepInGame(id: number): Promise<Step | null> {
-    return Step.createQueryBuilder('step')
-      .select('step')
-      .where('step."gameId" = :gameId', { gameId: id })
-      .orderBy('step.sequence', 'DESC')
-      .getOne();
-  }
-
-  static async stepCreate(
-    userId: number,
-    game: Game,
-    sequence: number,
-    value: string,
-    bulls: number,
-    cows: number
-  ): Promise<Step> {
-    let step = Step.create({
-      userId,
-      gameId: game.id,
-      sequence,
-      value,
-      bulls,
-      cows,
-    });
-
-    step = await Step.save(step);
-
-    return step;
   }
 }

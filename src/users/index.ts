@@ -3,5 +3,7 @@ export * from './users.constants';
 export * from './users.controller';
 export * from './users.repository';
 export * from './users.router';
+export * from './users.sanitizer';
 export * from './users.service';
+export * from './users.types';
 export * from './users.validation';

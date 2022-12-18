@@ -28,7 +28,7 @@ export const isAuth = (req: Request, res: Response, next: NextFunction): void =>
     }
 
     if (error instanceof jwt.TokenExpiredError) {
-      return next(new UnauthorizedError(AUTHORIZATION_ERROR_MESSAGE.TOKEN_IS_MISSNG));
+      return next(new UnauthorizedError(AUTHORIZATION_ERROR_MESSAGE.TOKEN_IS_MISSING));
     }
 
     next(error);

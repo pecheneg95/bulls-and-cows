@@ -1,7 +1,9 @@
+import { NotFoundError, USERS_ERROR_MESSAGE } from '@errors';
+
+import { LeaderboardWithTotalCount, UserStats } from './users.types';
+import { STATS } from './users.constants';
 import { User } from './user.entity';
 import { UsersRepository } from 'users/users.repository';
-import { STATS, Stats } from './users.constants';
-import { NotFoundError, USERS_ERROR_MESSAGE } from '@errors';
 
 export class UsersService {
   static async findById(id: number): Promise<User | null> {
@@ -14,7 +16,7 @@ export class UsersService {
     return user;
   }
 
-  static async getStats(userId: number): Promise<Stats | null> {
+  static async getStats(userId: number): Promise<UserStats | null> {
     const stats = UsersRepository.getStats(userId);
 
     return stats;
@@ -26,7 +28,7 @@ export class UsersService {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<{ totalCount: number; leaderboard: Stats[] } | null> {
+  ): Promise<LeaderboardWithTotalCount> {
     if (sortField === STATS.AVERAGE_STEPS_COUNT_TO_WIN) {
       return UsersRepository.getLeaderboardForAverageStepsToWin(dateFrom, dateTo, offset, limit);
     }

@@ -1,5 +1,7 @@
 const DEFAULT_USERS_OFFSET = 0;
 const DEFAULT_USERS_LIMIT = 20;
+const DEFAULT_USERS_DATE_FROM = new Date('2022/01/01');
+const DEFAULT_USERS_DATE_TO = new Date('2050/01/01');
 
 enum USER_ROLE {
   USER = 'user',
@@ -20,15 +22,12 @@ enum SORT_DIRECTION {
   DESC = 'desc',
 }
 
-type Stats = {
-  userId: number;
-  username: string;
-  [STATS.GAMES_COUNT]: number;
-  [STATS.COMPLETED_GAMES_COUNT]: number;
-  [STATS.WINS_COUNT]: number;
-  [STATS.LOSSES_COUNT]: number;
-  [STATS.DRAW_COUNT]: number;
-  [STATS.AVERAGE_STEPS_COUNT_TO_WIN]: number;
+export {
+  DEFAULT_USERS_OFFSET,
+  DEFAULT_USERS_LIMIT,
+  DEFAULT_USERS_DATE_FROM,
+  DEFAULT_USERS_DATE_TO,
+  USER_ROLE,
+  STATS,
+  SORT_DIRECTION,
 };
-
-export { DEFAULT_USERS_OFFSET, DEFAULT_USERS_LIMIT, USER_ROLE, STATS, SORT_DIRECTION, Stats };

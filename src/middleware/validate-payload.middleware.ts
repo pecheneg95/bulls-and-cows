@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 
-export const validatePayload = (req: Request, res: Response, next: NextFunction): void => {
+export const validatePayload = <T extends Request<any, any, any, any>>(
+  req: T,
+  res: Response,
+  next: NextFunction
+): void => {
   const errors = validationResult(req);
 
   console.log('Errors: \n', errors);

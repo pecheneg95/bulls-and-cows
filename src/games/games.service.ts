@@ -1,14 +1,27 @@
 import { DeleteResult } from 'typeorm';
 
-import { GameForCreator, GameForOpponent, GAME_STATUS, SORT_DIRECTION } from './games.constants';
-import { GamesRepository } from 'games/games.repository';
+import { BadRequestError, ForbiddenError, GAMES_ERROR_MESSAGE, NotFoundError } from '@errors';
+
+import { GameForCreator, GameForOpponent } from './games.types';
+import { GAME_STATUS, SORT_DIRECTION } from './games.constants';
+import { GamesRepository } from './games.repository';
+import { StepsRepository } from './steps.repository';
 import { Game } from './game.entity';
 import { Step } from './step.entity';
-import { BadRequestError, ForbiddenError, GAMES_ERROR_MESSAGE, NotFoundError } from '@errors';
 
 export class GamesService {
   static async findById(id: number): Promise<Game | null> {
     return GamesRepository.findById(id);
+  }
+
+  static async findByIdOrFail(id: number): Promise<Game> {
+    const game = await GamesRepository.findById(id);
+
+    if (!game) {
+      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
+    }
+
+    return game;
   }
 
   static async getGame(
@@ -29,22 +42,22 @@ export class GamesService {
 
   static async getAllGamesWithParams(
     userId: number,
-    userIds: number[] | null,
-    gameStatus: GAME_STATUS | null,
-    sortDirection: SORT_DIRECTION | null,
     offset: number,
-    limit: number
+    limit: number,
+    userIds?: number[],
+    gameStatus?: GAME_STATUS,
+    sortDirection?: SORT_DIRECTION
   ): Promise<{
     totalCount: number;
     games: (Game | GameForCreator | GameForOpponent)[];
   }> {
     const games = await GamesRepository.getAllGamesWithParams(
       userId,
+      offset,
+      limit,
       userIds,
       gameStatus,
-      sortDirection,
-      offset,
-      limit
+      sortDirection
     );
 
     const result = {
@@ -88,7 +101,7 @@ export class GamesService {
       }
     }
 
-    return GamesRepository.setWinner(game);
+    return game;
   }
 
   static async changeStatus(game: Game, status: GAME_STATUS): Promise<Game> {
@@ -96,11 +109,11 @@ export class GamesService {
   }
 
   static async getLastStepInGame(gameId: number): Promise<Step | null> {
-    return GamesRepository.getLastStepInGame(gameId);
+    return StepsRepository.getLastStepInGame(gameId);
   }
 
   static async getStepsForGame(gameId: number): Promise<Step[] | null> {
-    return GamesRepository.stepFindByGameId(gameId);
+    return StepsRepository.findByGameId(gameId);
   }
 
   static async makeStep(
@@ -112,11 +125,7 @@ export class GamesService {
     isCorrect: boolean;
     isGameOver: boolean;
   }> {
-    let game = await this.findById(gameId);
-
-    if (!game) {
-      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
-    }
+    let game = await this.findByIdOrFail(gameId);
 
     this.isMemberGameOrFail(game, userId);
     this.gameIsNotFinishedOrFail(game);
@@ -133,7 +142,7 @@ export class GamesService {
     const { bulls, cows } = this.calculateBullsAndCows(userId, game, stepValue);
     const sequence = lastStep ? lastStep.sequence + 1 : 1;
 
-    const curentStep = await GamesRepository.stepCreate(userId, game, sequence, stepValue, bulls, cows);
+    const currentStep = await StepsRepository.create(userId, game.id, sequence, stepValue, bulls, cows);
 
     const userHidden = userId === game.creatorId ? game.hiddenByCreator : game.hiddenByOpponent;
     const enemyHidden = userId === game.creatorId ? game.hiddenByOpponent : game.hiddenByCreator;
@@ -141,49 +150,33 @@ export class GamesService {
     if (lastStep && lastStep.value === userHidden) {
       game.status = (await this.changeStatus(game, GAME_STATUS.FINISHED)).status;
 
-      game = await this.calculateWinner(game, lastStep, curentStep);
+      game = await this.calculateWinner(game, lastStep, currentStep);
     }
 
     return {
-      step: curentStep,
+      step: currentStep,
       isCorrect: enemyHidden === stepValue,
       isGameOver: game.status === GAME_STATUS.FINISHED,
     };
   }
 
   static async deleteGame(gameId: number, userId: number): Promise<DeleteResult> {
-    const game = await this.findById(gameId);
-
-    if (!game) {
-      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
-    }
+    const game = await this.findByIdOrFail(gameId);
 
     this.isCreatorGameOrFail(game, userId);
 
-    if (game.status === GAME_STATUS.PLAYING) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_DELETE_AFTER_START);
-    }
-
-    if (game.status === GAME_STATUS.FINISHED) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_DELETE_FINISHED);
+    if (game.status !== GAME_STATUS.CREATED) {
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_DELETE);
     }
 
     return GamesRepository.delete(gameId);
   }
 
   static async changeSettings(gameId: number, hiddenLength: number): Promise<Game> {
-    const game = await this.findById(gameId);
+    const game = await this.findByIdOrFail(gameId);
 
-    if (!game) {
-      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
-    }
-
-    if (game.status === GAME_STATUS.PLAYING || game.hiddenByCreator || game.hiddenByOpponent) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_CHANGE_SETTINGS_AFTER_START);
-    }
-
-    if (game.status === GAME_STATUS.FINISHED) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_CHANGE_SETTINGS_FINISHED);
+    if (game.status !== GAME_STATUS.CREATED || game.hiddenByCreator || game.hiddenByOpponent) {
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.CANNOT_CHANGE_SETTINGS);
     }
 
     return GamesRepository.changeSettings(game, hiddenLength);
@@ -194,20 +187,12 @@ export class GamesService {
     userId: number,
     hidden: string
   ): Promise<Game | GameForCreator | GameForOpponent> {
-    const game = await this.findById(gameId);
-
-    if (!game) {
-      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
-    }
+    const game = await this.findByIdOrFail(gameId);
 
     this.isMemberGameOrFail(game, userId);
 
-    if (game.status === GAME_STATUS.PLAYING) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_HIDDEN_AFTER_START);
-    }
-
-    if (game.status === GAME_STATUS.FINISHED) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_HIDDEN_FINISHED);
+    if (game.status !== GAME_STATUS.CREATED) {
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_CHANGE_HIDDEN);
     }
 
     if (hidden.length !== game.hiddenLength) {
@@ -220,11 +205,7 @@ export class GamesService {
   }
 
   static async changeOpponent(gameId: number, userId: number, newOpponentId: number): Promise<Game> {
-    const game = await this.findById(gameId);
-
-    if (!game) {
-      throw new NotFoundError(GAMES_ERROR_MESSAGE.GAME_NOT_FOUND);
-    }
+    const game = await this.findByIdOrFail(gameId);
 
     this.isCreatorGameOrFail(game, userId);
 
@@ -235,11 +216,11 @@ export class GamesService {
     }
 
     if (game.status !== GAME_STATUS.CREATED) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_CHANGE_OPPONENT_AFTER_START);
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_CHANGE_OPPONENT);
     }
 
     if (game.creatorId === newOpponentId) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_WITH_YOURSELF);
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_WITH_YOURSELF);
     }
 
     if (game.opponentId === newOpponentId) {
@@ -251,7 +232,7 @@ export class GamesService {
 
   static async createGame(creatorId: number, opponentId: number): Promise<Game> {
     if (creatorId === opponentId) {
-      throw new BadRequestError(GAMES_ERROR_MESSAGE.NOT_WITH_YOURSELF);
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_WITH_YOURSELF);
     }
 
     const opponent = await this.findById(opponentId);
@@ -274,7 +255,7 @@ export class GamesService {
   }
 
   static async findStepsForGame(gameId: number): Promise<Step[] | null> {
-    return GamesRepository.stepFindByGameId(gameId);
+    return StepsRepository.findByGameId(gameId);
   }
 
   static getGameForUserByRoleInGame(userId: number, game: Game): GameForCreator | GameForOpponent | Game {
@@ -339,7 +320,7 @@ export class GamesService {
   }
   static gameIsNotFinishedOrFail(game: Game): void {
     if (game.status === GAME_STATUS.FINISHED) {
-      throw new ForbiddenError(GAMES_ERROR_MESSAGE.NOT_STEP_AFTER_FINISHED);
+      throw new ForbiddenError(GAMES_ERROR_MESSAGE.CANNOT_MAKE_STEP_AFTER_FINISHED);
     }
   }
 

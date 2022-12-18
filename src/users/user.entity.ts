@@ -2,8 +2,8 @@ import { Entity, Column, OneToMany } from 'typeorm';
 
 import { BasicEntity } from './../types/basic.entity';
 
-import { Game } from '../games/game.entity';
-import { Step } from '../games/step.entity';
+import { Game } from './../games/game.entity';
+import { Step } from './../games/step.entity';
 
 import { USER_ROLE } from './users.constants';
 

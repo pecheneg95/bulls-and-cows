@@ -1,7 +1,6 @@
-import { Game, GAME_STATUS, Step } from '@games';
-import { Brackets } from 'typeorm';
+import { UserStats, LeaderboardWithTotalCount } from './users.types';
+import { USER_ROLE } from './users.constants';
 import { User } from './user.entity';
-import { Stats, STATS, USER_ROLE } from './users.constants';
 
 export class UsersRepository {
   static async create(username: string, password: string, email: string): Promise<User> {
@@ -25,38 +24,28 @@ export class UsersRepository {
     return User.findOneBy({ id });
   }
 
-  static async getStats(userId: number): Promise<Stats | null> {
+  static async getStats(userId: number): Promise<UserStats | null> {
     const stats = User.query(
-      `SELECT id AS "userId", 
-      username,
-      (SELECT COUNT(*) FROM game WHERE "creatorId" = $1 OR "opponentId" = $1) AS "gamesCount",
-      (SELECT COUNT(*) FROM game WHERE status = 'finished' AND "winnerId" = $1) AS "winsCount",
-      (SELECT COUNT(*)
-        FROM game
-        WHERE status = 'finished'
-          AND "winnerId" != $1 AND "winnerId" IS NOT NULL
-          AND ("creatorId" = $1 OR "opponentId" = $1)
-      ) AS "losesCount",
-      (SELECT COUNT(*)
-       FROM game
-        WHERE status = 'finished' AND "winnerId" IS NULL
-         AND ("creatorId" = $1 OR "opponentId" = $1)
-      ) AS "drawsCount",
-      (SELECT COUNT(*)
-        FROM game
-        WHERE status = 'finished' AND ("creatorId" = $1 OR "opponentId" = $1)
-      ) AS "finishedGamesCount",
+      `SELECT "user".id AS "userId", 
+      username, 
+      COUNT(*) AS "gamesCount",
+      SUM(CASE WHEN game.status = 'finished' THEN 1 ELSE 0 END) AS "completedGamesCount",
+      SUM(CASE WHEN game.status = 'finished' AND game."winnerId" = $1 THEN 1 ELSE 0 END) AS "winsCount",
+      SUM(CASE WHEN game.status = 'finished' AND game."winnerId" != $1 AND game."winnerId" IS NOT null THEN 1 ELSE 0 END) AS "losesCount",
+      SUM(CASE WHEN game.status = 'finished' AND game."winnerId" = null THEN 1 ELSE 0 END) AS "drawsCount",
       (SELECT ROUND(AVG("winStepsCount"), 1) FROM 
-  	 	  (SELECT COUNT(*) AS "winStepsCount"
-     		  FROM game AS g
-     		  INNER JOIN step AS s ON g.id = s."gameId"
-      	  WHERE g.status = 'finished' AND g."winnerId" = $1
-      	  AND s."userId" = $1
-      	  GROUP BY g.id
-    	  ) AS "stepsCountByGame"
+        (SELECT COUNT(*) AS "winStepsCount"
+            FROM game
+             INNER JOIN step ON game.id = step."gameId"
+              WHERE game.status = 'finished' AND game."winnerId" = $1
+              AND step."userId" = $1
+              GROUP BY game.id
+          ) AS "stepsCountByGame"
       ) AS "averageStepsToWin"
       FROM "user"
-      where "user".id = $1;`,
+      INNER JOIN game ON game."creatorId" = $1 OR game."opponentId" = $1
+      WHERE "user".id = $1
+      GROUP BY "userId", username;`,
       [userId]
     );
 
@@ -68,37 +57,31 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder('user')
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('ROUND(AVG("winStepsCount"))')
-            .from(
-              (qb) =>
-                qb
-                  .select('COUNT(*)', 'winStepsCount')
-                  .from(Game, 'game')
-                  .innerJoin(Step, 'step', 'game.id = step."gameId"')
-                  .where('game.status = :status', { status: GAME_STATUS.FINISHED })
-                  .andWhere('game."winnerId" = user.id')
-                  .andWhere('step."userId" = user.id')
-                  .andWhere('game."createdAt" >= :from', { from: dateFrom })
-                  .andWhere('game."createdAt" <= :to', { to: dateTo }),
-              'stepsCountByGame'
-            ),
-        STATS.AVERAGE_STEPS_COUNT_TO_WIN
-      )
-      .orderBy('"averageStepsCountToWin"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
+  ): Promise<LeaderboardWithTotalCount> {
+    const leaderboardPromise = User.query(
+      `SELECT "user".id AS "userId", 
+      username, 
+      (SELECT ROUND(AVG("winStepsCount"), 1) FROM 
+        (SELECT COUNT(*) AS "winStepsCount"
+            FROM game
+             INNER JOIN step ON game.id = step."gameId"
+              WHERE game.status = 'finished' 
+              AND game."winnerId" = "user".id
+              AND step."userId" = "user".id
+              AND game."createdAt" >= $1
+              AND game."createdAt" <= $2
+              GROUP BY game.id
+          ) AS "stepsCountByGame"
+      ) AS "averageStepsCountToWin"
+      WHERE "user".role = 'user'
+      ORDER BY "averageStepsCountToWin" ASC, username ASC
+      OFFSET $3
+      LIMIT $4;
+    `,
+      [dateFrom, dateTo, offset, limit]
+    );
 
-    const totalCountPromise = User.count();
-
-    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+    const [totalCount, leaderboard] = await Promise.all([this.getTotalCountForLeaderboard(), leaderboardPromise]);
 
     return { totalCount, leaderboard };
   }
@@ -108,34 +91,22 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder('user')
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where(
-              new Brackets((qb) => {
-                qb.where('"creatorId" = user.id').orWhere('"opponentId" = user.id');
-              })
-            )
-            .andWhere('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"createdAt" >= :from', { from: dateFrom })
-            .andWhere('"createdAt" <= :to', { to: dateTo }),
-        STATS.COMPLETED_GAMES_COUNT
-      )
-      .groupBy('user.id')
-      .orderBy('"completedGamesCount"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
+  ): Promise<LeaderboardWithTotalCount> {
+    const leaderboardPromise = User.query(
+      `SELECT "user".id AS "userId", 
+      username, 
+      SUM(CASE WHEN game."createdAt" >= $1 AND game."createdAt" <= $2 THEN 1 ELSE 0 END) AS "completedGamesCount"
+      FROM "user"
+      LEFT JOIN game ON game.status = 'finished' AND (game."creatorId" = "user".id OR game."opponentId" = "user".id)
+      WHERE "user".role = 'user'
+      GROUP BY "userId", username
+      ORDER BY "completedGamesCount" DESC, username ASC
+      offset $3
+      limit $4;`,
+      [dateFrom, dateTo, offset, limit]
+    );
 
-    const totalCountPromise = User.count();
-
-    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+    const [totalCount, leaderboard] = await Promise.all([this.getTotalCountForLeaderboard(), leaderboardPromise]);
 
     return { totalCount, leaderboard };
   }
@@ -145,31 +116,27 @@ export class UsersRepository {
     dateTo: Date,
     offset: number,
     limit: number
-  ): Promise<{ totalCount: number; leaderboard: Stats[] }> {
-    const leaderboardPromise = User.createQueryBuilder('user')
-      .select('user.id')
-      .addSelect('user.username')
-      .addSelect(
-        (qb) =>
-          qb
-            .select('COUNT(game)')
-            .from(Game, 'game')
-            .where('status = :status', { status: GAME_STATUS.FINISHED })
-            .andWhere('"winnerId" = user.id')
-            .andWhere('"createdAt" >= :from', { from: dateFrom })
-            .andWhere('"createdAt" <= :to', { to: dateTo }),
-        STATS.WINS_COUNT
-      )
-      .groupBy('user.id')
-      .orderBy('"winsCount"', 'DESC')
-      .offset(offset)
-      .limit(limit)
-      .getRawMany();
+  ): Promise<LeaderboardWithTotalCount> {
+    const leaderboardPromise = User.query(
+      `SELECT "user".id AS "userId", 
+      username, 
+      SUM(CASE WHEN game."createdAt" >= $1 AND game."createdAt" <= $2 THEN 1 ELSE 0 END) AS "winsCount"
+      FROM "user"
+      LEFT JOIN game ON game.status = 'finished' AND game."winnerId" = "user".id
+      WHERE "user".role = 'user'
+      GROUP BY "userId", username
+      ORDER BY "winsCount" DESC, username ASC
+      offset $3
+      limit $4;`,
+      [dateFrom, dateTo, offset, limit]
+    );
 
-    const totalCountPromise = User.count();
-
-    const [totalCount, leaderboard] = await Promise.all([totalCountPromise, leaderboardPromise]);
+    const [totalCount, leaderboard] = await Promise.all([this.getTotalCountForLeaderboard(), leaderboardPromise]);
 
     return { totalCount, leaderboard };
+  }
+
+  static async getTotalCountForLeaderboard(): Promise<number> {
+    return User.countBy({ role: USER_ROLE.USER });
   }
 }

@@ -1,10 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 
-import { User } from '../users/user.entity';
-
-import { Step } from './step.entity';
-import { GAME_STATUS, DEFAULT_HIDDEN_LENGTH } from './games.constants';
 import { BasicEntity } from './../types/basic.entity';
+
+import { User } from './../users/user.entity';
+
+import { GAME_STATUS, DEFAULT_HIDDEN_LENGTH } from './games.constants';
+import { Step } from './step.entity';
 
 @Entity('game')
 export class Game extends BasicEntity {
