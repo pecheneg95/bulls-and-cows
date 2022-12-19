@@ -1,4 +1,5 @@
 import { param, query } from 'express-validator';
+
 import { SORT_DIRECTION, STATS } from './users.constants';
 
 export class UsersValidation {
@@ -9,6 +10,7 @@ export class UsersValidation {
       .custom((value) => value >= 0)
       .withMessage('Value is not positive'),
   ];
+
   static leaderboard = [
     query('sort[field]')
       .optional()

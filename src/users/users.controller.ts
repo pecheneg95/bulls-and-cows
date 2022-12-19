@@ -1,44 +1,46 @@
-import { NextFunction, Request, Response } from 'express';
-import { STATS } from './users.constants';
+import { NextFunction, Response, Request } from 'express';
+
+import { GetLeaderboardSanitizedRequest, GetUserStatsSanitizedRequest } from './users.types';
+import { UsersService } from './users.service';
 
 export class UsersController {
-  static getInfoAboutMyself = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getInfoAboutMyself(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      console.log('Info about me');
+      const userId = req.userId;
 
-      res.status(200).json('User');
+      const user = await UsersService.findById(userId);
+
+      res.status(200).json(user);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static getUserStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getUserStats(req: GetUserStatsSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.params.userId;
 
-      console.log('userId: ', userId);
+      const stats = await UsersService.getStats(userId);
 
-      res.status(200).json('Stats');
+      res.status(200).json(stats);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static getLeaderboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getLeaderboard(req: GetLeaderboardSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const reqQueryLeaderboard = {
-        sort: req.query.sort as STATS,
-        from: new Date(String(req.query.from)),
-        to: new Date(String(req.query.to)),
-        offset: Number(req.query.offset),
-        limit: Number(req.query.limit),
-      };
+      const sortField = req.query.sort;
+      const dateFrom = req.query.from;
+      const dateTo = req.query.to;
+      const offset = req.query.offset;
+      const limit = req.query.limit;
 
-      console.log(reqQueryLeaderboard);
+      const leaderboard = await UsersService.getLeaderboard(sortField, dateFrom, dateTo, offset, limit);
 
-      res.status(200).json('Leaderboard');
+      res.status(200).json(leaderboard);
     } catch (error) {
       next(error);
     }
-  };
+  }
 }

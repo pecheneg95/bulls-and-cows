@@ -1,5 +1,6 @@
 import { body, param, query } from 'express-validator';
-import { GAME_SORT_BY, GAME_STATUS, MIN_HIDDEN_LENGTH, SORT_DIRECTION } from './games.constants';
+
+import { GAME_SORT_BY, GAME_STATUS, DEFAULT_HIDDEN_LENGTH, SORT_DIRECTION } from './games.constants';
 
 export class GamesValidation {
   static allMyGame = [
@@ -29,7 +30,7 @@ export class GamesValidation {
       .optional()
       .custom((value) => Object.values(GAME_SORT_BY).includes(value))
       .withMessage('Value is not includes enum GAME_SORT_BY'),
-    query('sort[type]')
+    query('sortDirection')
       .optional()
       .custom((value) => Object.values(SORT_DIRECTION).includes(value))
       .withMessage('Value is not includes enum SORT_DIRECTION'),
@@ -95,7 +96,7 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: MIN_HIDDEN_LENGTH })
+      .isLength({ min: DEFAULT_HIDDEN_LENGTH })
       .withMessage('Value less than min hidden length'),
   ];
 
@@ -110,7 +111,7 @@ export class GamesValidation {
       .trim()
       .custom((value) => value.length === new Set(value.split('')).size)
       .withMessage('Value includes not unique symbol')
-      .isLength({ min: MIN_HIDDEN_LENGTH })
+      .isLength({ min: DEFAULT_HIDDEN_LENGTH })
       .withMessage('Value less than min hidden length'),
   ];
 
@@ -123,7 +124,7 @@ export class GamesValidation {
     body('hiddenLength')
       .isInt({ allow_leading_zeroes: false })
       .withMessage('Value is not number')
-      .isLength({ min: MIN_HIDDEN_LENGTH })
+      .isLength({ min: DEFAULT_HIDDEN_LENGTH })
       .withMessage('Value less than min hidden length'),
   ];
 }

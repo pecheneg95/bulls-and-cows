@@ -101,7 +101,8 @@ Response DTO {
 
 status {
   201 - Created;
-  400 - Bad Request: 'Incorrect password format' | 'Incorrect username format' | 'Incorrect email format' | 'Email already in use';
+  400 - Bad Request: 'Incorrect username format' | 'Incorrect password format' | 'Incorrect email format';
+  422 - Unprocessable Entity: 'Email already in use';
 }
 ```
 
@@ -206,7 +207,7 @@ GameDTO
 
 status {
   200 - OK;
-  400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start';
+  400 - Bad Request: 'Game with this user is already created' | 'Opponent not found' | 'You cannot change opponent after game start' | 'You cannot choose yourself as an opponent';
   403 -	Forbidden: 'You are not a member of this game';
   401 - Unauthorized;
 }
@@ -288,7 +289,7 @@ GET api/v1/games
 Request Query DTO {
   userIds?: number[],
   status?: GAME_STATUS,
-  sort[type]?: SORT_DIRECTION,
+  sortDirection: SORT_DIRECTION,
   sort[field]: GAME_SORT_BY,
   offset: number,
   limit: number,

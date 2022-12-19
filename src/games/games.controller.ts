@@ -1,119 +1,133 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
+
+import {
+  ChangeOpponentSanitizedRequest,
+  ChangeSettingsSanitizedRequest,
+  CreateGameSanitizedRequest,
+  DeleteGameSanitizedRequest,
+  GetAllMyGamesSanitizedRequest,
+  GetGameSanitizedRequest,
+  MakeStepSanitizedRequest,
+  SetHiddenSanitizedRequest,
+} from './games.types';
+import { GamesService } from './games.service';
 
 export class GamesController {
-  static getAllMyGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getAllMyGames(req: GetAllMyGamesSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const userId = req.userId;
       const userIds = req.query.userIds;
+      const gameStatus = req.query.status;
+      const sortDirection = req.query.sortDirection;
+      const offset = req.query.offset;
+      const limit = req.query.limit;
 
-      console.log('userIds: ', userIds);
+      const result = await GamesService.getAllGamesWithParams(
+        userId,
+        offset,
+        limit,
+        userIds,
+        gameStatus,
+        sortDirection
+      );
 
-      res.status(200).json('Game[]');
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static createGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async createGame(req: CreateGameSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const opponentId = Number(req.body.opponentId);
-      const creatorId = Number(req.userId);
+      const opponentId = req.body.opponentId;
+      const creatorId = req.userId;
 
-      console.log('opponentId: ', opponentId);
-      console.log('creatorId: ', creatorId);
+      const game = await GamesService.createGame(creatorId, opponentId);
 
-      res.status(200).json('Game');
+      res.status(200).json(game);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static getInfoAboutGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async getGame(req: GetGameSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const gameId = Number(req.params.gameId);
+      const userId = req.userId;
+      const gameId = req.params.gameId;
 
-      console.log('userId: ', userId);
-      console.log('gameId: ', gameId);
+      const game = await GamesService.getGame(gameId, userId);
 
-      res.status(200).json('Game');
+      res.status(200).json(game);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static changeOpponent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async changeOpponent(req: ChangeOpponentSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const newOpponentId = Number(req.body.opponentId);
-      const gameId = Number(req.params.gameId);
+      const userId = req.userId;
+      const newOpponentId = req.body.opponentId;
+      const gameId = req.params.gameId;
 
-      console.log('userId: ', userId);
-      console.log('newOpponentId: ', newOpponentId);
-      console.log('gameId: ', gameId);
+      const updatedGame = await GamesService.changeOpponent(gameId, userId, newOpponentId);
 
-      res.status(200).json('Game');
+      res.status(200).json(updatedGame);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static deleteGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async deleteGame(req: DeleteGameSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const gameId = Number(req.params.gameId);
+      const userId = req.userId;
+      const gameId = req.params.gameId;
 
-      console.log('userId: ', userId);
-      console.log('gameId: ', gameId);
+      await GamesService.deleteGame(gameId, userId);
 
-      res.status(200).json({ message: 'Game deleted' });
+      res.status(200);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static makeHidden = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async setHidden(req: SetHiddenSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const gameId = Number(req.params.gameId);
+      const hidden = req.body.hidden;
+      const userId = req.userId;
+      const gameId = req.params.gameId;
 
-      console.log('userId: ', userId);
-      console.log('gameId: ', gameId);
+      const updatedGame = await GamesService.setHidden(gameId, userId, hidden);
 
-      res.status(200).json('Game');
+      res.status(200).json(updatedGame);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static step = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async makeStep(req: MakeStepSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-      const gameId = Number(req.params.gameId);
-      const stepValue = String(req.body.stepValue);
+      const userId = req.userId;
+      const gameId = req.params.gameId;
+      const stepValue = req.body.stepValue;
 
-      console.log('userId: ', userId);
-      console.log('gameId: ', gameId);
-      console.log('stepValue: ', stepValue);
+      const result = await GamesService.makeStep(userId, gameId, stepValue);
 
-      res.status(200).json('Step');
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static changeSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async changeSettings(req: ChangeSettingsSanitizedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const hiddenLength = Number(req.body.hiddenLength);
-      const userId = Number(req.userId);
-      const gameId = Number(req.params.gameId);
+      const hiddenLength = req.body.hiddenLength;
+      const gameId = req.params.gameId;
 
-      console.log('hiddenLength: ', hiddenLength);
-      console.log('userId: ', userId);
-      console.log('gameId: ', gameId);
+      const updatedGame = await GamesService.changeSettings(gameId, hiddenLength);
 
-      res.status(200).json('Game');
+      res.status(200).json(updatedGame);
     } catch (error) {
       next(error);
     }
-  };
+  }
 }

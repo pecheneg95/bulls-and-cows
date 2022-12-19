@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+
 import { MAX_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, MIN_USERNAME_LENGTH, PASSWORD_FORMAT } from './auth.constants';
 
 export class AuthValidation {

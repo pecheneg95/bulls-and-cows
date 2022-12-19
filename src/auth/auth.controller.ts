@@ -1,49 +1,38 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { AuthService } from './auth.service';
+import { LoginRequest, SignUpRequest } from './auth.types';
+
 export class AuthController {
-  static signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async signUp(req: SignUpRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password, username } = req.body;
+      const { username, password, email } = req.body;
 
-      console.log('Username: ', username);
-      console.log('Email: ', email);
-      console.log('Password: ', password);
+      const authToken = await AuthService.signUp(username, password, email);
 
-      res.status(201).json({
-        message: 'User has been created',
-      });
+      res.status(201).json(authToken);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async login(req: LoginRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password } = req.body;
+      const { password, email } = req.body;
 
-      console.log('Email: ', email);
-      console.log('Password: ', password);
+      const authToken = await AuthService.login(password, email);
 
-      res.status(200).json({
-        message: 'Authentification succeeded.',
-        token: 'token',
-      });
+      res.status(200).json(authToken);
     } catch (error) {
       next(error);
     }
-  };
+  }
 
-  static logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = Number(req.userId);
-
-      console.log('userId: ', userId);
-
-      res.status(200).json({
-        message: 'Logout succeeded.',
-      });
+      res.status(200);
     } catch (error) {
       next(error);
     }
-  };
+  }
 }

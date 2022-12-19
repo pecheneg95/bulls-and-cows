@@ -1,30 +1,70 @@
 import * as express from 'express';
 import { Application } from 'express';
 
-import { validatePayload } from '@middleware';
+import { isAuth, checkRole, validatePayload } from '@middleware';
 
-import { GamesController } from './games.controller';
+import { USER_ROLE } from '@users';
+
+import {
+  ChangeOpponentRequest,
+  ChangeSettingsRequest,
+  CreateGameRequest,
+  DeleteGameRequest,
+  GetAllMyGamesRequest,
+  GetGameRequest,
+  MakeStepRequest,
+  SetHiddenRequest,
+} from './games.types';
 import { GamesValidation } from './games.validation';
+import { GamesSanitizer } from './games.sanitizer';
+import { GamesController } from './games.controller';
 
 const router = express.Router();
 
-router.get('/', ...GamesValidation.allMyGame, validatePayload, GamesController.getAllMyGames);
-router.post('/', ...GamesValidation.createGame, validatePayload, GamesController.createGame);
+router.get(
+  '/',
+  ...GamesValidation.allMyGame,
+  validatePayload<GetAllMyGamesRequest>,
+  GamesSanitizer.getAllMyGames,
+  GamesController.getAllMyGames
+);
 
-router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload, GamesController.getInfoAboutGame);
-router.patch('/:gameId', ...GamesValidation.changeOpponent, validatePayload, GamesController.changeOpponent);
-router.delete('/:gameId', ...GamesValidation.deleteGame, validatePayload, GamesController.deleteGame);
+router.post(
+  '/',
+  ...GamesValidation.createGame,
+  validatePayload<CreateGameRequest>,
+  GamesSanitizer.createGame,
+  GamesController.createGame
+);
 
-router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload, GamesController.makeHidden);
-router.post('/:gameId/step', ...GamesValidation.step, validatePayload, GamesController.makeMove);
+router.get('/:gameId', ...GamesValidation.infoAboutGame, validatePayload<GetGameRequest>, GamesController.getGame);
 
 router.patch(
-  'digits-number/:gameId',
+  '/:gameId',
+  ...GamesValidation.changeOpponent,
+  validatePayload<ChangeOpponentRequest>,
+  GamesController.changeOpponent
+);
+
+router.delete(
+  '/:gameId',
+  ...GamesValidation.deleteGame,
+  validatePayload<DeleteGameRequest>,
+  GamesController.deleteGame
+);
+
+router.post('/:gameId/hidden', ...GamesValidation.hidden, validatePayload<SetHiddenRequest>, GamesController.setHidden);
+
+router.post('/:gameId/step', ...GamesValidation.step, validatePayload<MakeStepRequest>, GamesController.makeStep);
+
+router.patch(
+  '/digits-number/:gameId',
+  checkRole(USER_ROLE.ADMIN)<ChangeSettingsRequest>,
   ...GamesValidation.changeSettings,
-  validatePayload,
+  validatePayload<ChangeSettingsRequest>,
   GamesController.changeSettings
 );
 
 export function mountRouter(app: Application): void {
-  app.use('/games', router);
+  app.use('/games', isAuth, router);
 }
