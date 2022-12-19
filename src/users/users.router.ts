@@ -24,6 +24,7 @@ router.get(
   '/leaderboard',
   ...UsersValidation.leaderboard,
   validatePayload<GetLeaderboardRequest>,
+  UsersSanitizer.getLeaderboard,
   UsersController.getLeaderboard
 );
 
