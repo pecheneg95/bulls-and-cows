@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="./style.css" rel="stylesheet" type="text/css">
+  <title>Bulls and Cows</title>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>Login</h1>
+      <div class="login">
+        <div class="login-inputs-container">
+          <span>Email</span>
+          <input class="login-input email" type="email">
+          <span>Password</span>
+          <input class="login-input password" type="text">
+        </div>
+        <button class="login-btn">Login</button>
+      </div>
+    </section>
+    <section>
+      <h2>Create game</h2>
+      <div class="create-game-container">
+        <span>Opponent Id</span>
+        <input class="create-game opponent" type="text">
+      </div>
+      <button class="create-game-btn">Send invite</button>
+    </section>
+    <section>
+      <h2>Leaderboard</h2>
+      <div class="leaderboard">
+        <div class="leaderboard-input-container">
+          <label for="sortField">sortField</label>
+          <input class="leaderboard-input sortField" type="text" name="sortField">
+        </div>
+        <div class="leaderboard-input-container">
+          <label for="dateFrom">dateFrom</label>
+          <input class="leaderboard-input dateFrom" type="text" name="dateFrom">
+        </div>
+        <div class="leaderboard-input-container">
+          <label for="dateTo">dateTo</label>
+          <input class="leaderboard-input dateTo" type="text" name="dateTo">
+        </div>
+        <div class="leaderboard-input-container">
+          <label for="offset">offset</label>
+          <input class="leaderboard-input offset" type="text" name="offset">
+        </div>
+        <div class="leaderboard-input-container">
+          <label for="limit">limit</label>
+          <input class="leaderboard-input limit" type="text" name="limit">
+        </div>
+        <button class="leaderboard-btn">Get leaderboard</button>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="./index.js"></script>
+</body>
+
+</html>

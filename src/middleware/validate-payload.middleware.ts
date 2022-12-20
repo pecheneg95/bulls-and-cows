@@ -8,8 +8,6 @@ export const validatePayload = <T extends Request<any, any, any, any>>(
 ): void => {
   const errors = validationResult(req);
 
-  console.log('Errors: \n', errors);
-
   if (!errors.isEmpty()) {
     res.status(400).json({ message: 'Bad request', statusCode: 400, errors: errors.array() });
 

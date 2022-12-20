@@ -1,0 +1,113 @@
+body {
+  background: #ccc;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+section {
+  width: 400px;
+  padding: 8px;
+  text-align: center;
+  background: #fefefe;
+  border-radius: 9px;
+}
+
+h1,
+h2 {
+  font-family: 'Courier New', Courier, monospace;
+  margin-bottom: 12px;
+}
+
+button {
+  background: #c7edd1;
+  color: #041f0b;
+  padding: 8px 16px;
+  border: #1e9ed9;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.login-inputs-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-input {
+  width: 200px;
+  height: 30px;
+  border-color: #000;
+  border-width: 3px;
+  margin-bottom: 20px;
+}
+
+.create-game-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-input-container {
+  width: 300px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.push {
+  position: absolute;
+  left: 20px;
+  top: 50px;
+  width: 300px;
+  height: 100px;
+  background-color: darkgray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 2s;
+}
+
+.push-visible {
+  opacity: 1;
+  transition: opacity 2s;
+}
+
+.push-title {
+  font-size: 24px;
+}
+
+.push-userId {
+  font-size: 30px;
+  color: blue;
+}
