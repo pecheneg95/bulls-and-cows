@@ -23,6 +23,7 @@ async function login() {
 
   if (response.status === 200) {
     token = await response.json();
+    console.log(token);
   }
 
   if (token) {
@@ -36,7 +37,7 @@ async function login() {
   }
 
   function socketConnect() {
-    socket = io("ws://localhost:8080", {
+    socket = io("ws://localhost:8081", {
       query: {
         token: token
       }
@@ -44,21 +45,6 @@ async function login() {
 
     socket.connect();
     socket.on('connect', () => console.log('Connection established!'));
-
-    socket.on('message', function (data) {
-      data = JSON.parse(data);
-      try {
-        switch (data.event) {
-          case 'hello':
-            console.log('Server sent greetings');
-            break;
-          default:
-            console.log('Unknown event');
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    });
 
     socket.on('invite', (userId) => {
       try {
@@ -91,7 +77,6 @@ async function createGame() {
 }
 
 async function getLeaderboard() {
-  const leaderboardContainer = document.querySelector('.leaderboard')
   const url = new URL('http://localhost:8080/users/leaderboard')
 
   const sortField = document.querySelector('.sortField').value;
@@ -124,7 +109,6 @@ async function getLeaderboard() {
 }
 
 function invite(userId) {
-  console.log('YOU HAVE INVITE!!!')
   const main = document.querySelector('main');
 
   const push = document.createElement('div');

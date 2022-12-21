@@ -10,7 +10,7 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -25,28 +25,35 @@
     ],
     "paths": {
       "@users": [
-        "users"
+        "src/users"
       ],
       "@games": [
-        "games"
+        "src/games"
       ],
       "@errors": [
-        "errors"
+        "src/errors"
       ],
       "@middleware": [
-        "middleware"
+        "src/middleware"
       ],
       "@auth": [
-        "auth"
+        "src/auth"
+      ],
+      "@utils": [
+        "src/utils"
+      ],
+      "@config": [
+        "src/config"
       ],
     }
   },
   "exclude": [
     "node_modules",
-    "client"
+    "client",
+    "dist"
   ],
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
   ],
   "ts-node": {
     "files": true
