@@ -71,14 +71,6 @@ export class GamesService {
     return result;
   }
 
-  static async getAllGamesForUser(userId: number, from?: Date, to?: Date): Promise<Game[] | null> {
-    if (from && to) {
-      return GamesRepository.findByUserIdWithDate(userId, from, to);
-    }
-
-    return GamesRepository.findByUserId(userId);
-  }
-
   static async calculateWinner(game: Game, lastStep: Step, currentStep: Step): Promise<Game> {
     const { creatorId, opponentId, hiddenByCreator, hiddenByOpponent } = game;
 
