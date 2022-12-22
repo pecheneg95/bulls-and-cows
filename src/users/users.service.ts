@@ -3,7 +3,7 @@ import { NotFoundError, USERS_ERROR_MESSAGE } from '@errors';
 import { LeaderboardWithTotalCount, UserStats } from './users.types';
 import { STATS } from './users.constants';
 import { User } from './user.entity';
-import { UsersRepository } from 'users/users.repository';
+import { UsersRepository } from './users.repository';
 
 export class UsersService {
   static async findById(id: number): Promise<User | null> {

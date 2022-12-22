@@ -8,6 +8,7 @@ import { GamesRepository } from './games.repository';
 import { StepsRepository } from './steps.repository';
 import { Game } from './game.entity';
 import { Step } from './step.entity';
+import { UsersRepository } from '@users';
 
 export class GamesService {
   static async findById(id: number): Promise<Game | null> {
@@ -209,6 +210,12 @@ export class GamesService {
 
     this.isCreatorGameOrFail(game, userId);
 
+    const opponent = await UsersRepository.findById(newOpponentId);
+
+    if (!opponent) {
+      throw new BadRequestError(GAMES_ERROR_MESSAGE.OPPONENT_NOT_FOUND);
+    }
+
     const unfinishedGame = await this.findUnfinishedGameForTwoUsers(userId, newOpponentId);
 
     if (unfinishedGame) {
@@ -235,7 +242,7 @@ export class GamesService {
       throw new BadRequestError(GAMES_ERROR_MESSAGE.CANNOT_WITH_YOURSELF);
     }
 
-    const opponent = await this.findById(opponentId);
+    const opponent = await UsersRepository.findById(opponentId);
 
     if (!opponent) {
       throw new BadRequestError(GAMES_ERROR_MESSAGE.OPPONENT_NOT_FOUND);

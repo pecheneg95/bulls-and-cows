@@ -1,5 +1,7 @@
 import { NextFunction, Response } from 'express';
 
+import { eventEmitter, EVENTS } from '../utils/event-emitter';
+
 import {
   ChangeOpponentSanitizedRequest,
   ChangeSettingsSanitizedRequest,
@@ -44,6 +46,8 @@ export class GamesController {
 
       const game = await GamesService.createGame(creatorId, opponentId);
 
+      eventEmitter.emit(EVENTS.NEW_GAME, opponentId, creatorId);
+
       res.status(200).json(game);
     } catch (error) {
       next(error);
@@ -70,6 +74,8 @@ export class GamesController {
       const gameId = req.params.gameId;
 
       const updatedGame = await GamesService.changeOpponent(gameId, userId, newOpponentId);
+
+      eventEmitter.emit(EVENTS.NEW_GAME, newOpponentId, userId);
 
       res.status(200).json(updatedGame);
     } catch (error) {
