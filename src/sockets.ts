@@ -6,7 +6,7 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 const io = new Server({ cors: { origin: '*' } });
 
-function subscibeUserToHisRoom(client: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>): void {
+function checkUserAndJoinRoom(client: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>): void {
   if (client.handshake.query.token) {
     try {
       const secret = config.DEV.JWT_SECRET;
@@ -23,7 +23,7 @@ function subscibeUserToHisRoom(client: Socket<DefaultEventsMap, DefaultEventsMap
 }
 
 io.on('connection', (client) => {
-  subscibeUserToHisRoom(client);
+  checkUserAndJoinRoom(client);
 
   client.on('error', (e) => client.send(e));
 });
