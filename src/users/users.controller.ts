@@ -20,6 +20,7 @@ export class UsersController {
     try {
       const userId = req.params.userId;
 
+      console.log(userId);
       const stats = await UsersService.getStats(userId);
 
       res.status(200).json(stats);

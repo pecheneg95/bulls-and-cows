@@ -1,4 +1,4 @@
-import { Between, Brackets, DeleteResult, Not } from 'typeorm';
+import { Brackets, DeleteResult, Not } from 'typeorm';
 
 import { GAME_STATUS, SORT_DIRECTION } from './games.constants';
 import { Game } from './game.entity';
@@ -10,15 +10,6 @@ export class GamesRepository {
 
   static async findByUserId(userId: number): Promise<Game[] | null> {
     return Game.find({ where: [{ creatorId: userId }, { opponentId: userId }] });
-  }
-
-  static async findByUserIdWithDate(userId: number, from: Date, to: Date): Promise<Game[] | null> {
-    return Game.find({
-      where: [
-        { creatorId: userId, createdAt: Between(from, to) },
-        { opponentId: userId, createdAt: Between(from, to) },
-      ],
-    });
   }
 
   static async findUnfinishedGameForTwoUsers(firstUserId: number, secondUserId: number): Promise<Game | null> {
@@ -113,14 +104,14 @@ export class GamesRepository {
       .select('game')
       .where(
         new Brackets((qb) => {
-          qb.where('game.creatorId = :id', { id: userId }).orWhere('game.opponentId = :id', { id: userId });
+          qb.andWhere('game.creatorId = :id').orWhere('game.opponentId = :id', { id: userId });
         })
       );
 
     if (userIds) {
       query.andWhere(
         new Brackets((qb) => {
-          qb.where('game."creatorId" IN (:...ids)', { ids: userIds }).orWhere('game."opponentId" IN (:...ids)', {
+          qb.andWhere('game."creatorId" = ANY (:ids)').orWhere('game."opponentId" = ANY (:ids)', {
             ids: userIds,
           });
         })

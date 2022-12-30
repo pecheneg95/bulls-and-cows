@@ -6,6 +6,7 @@ import { UnauthorizedError, AUTHENTIFICATION_ERROR_MESSAGE, BadRequestError } fr
 import { UsersRepository } from '@users';
 
 import { EXPIRES_IN, SALT } from './auth.constants';
+import { config } from '@config';
 
 export class AuthService {
   static async signUp(username: string, password: string, email: string): Promise<string> {
@@ -17,13 +18,12 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, SALT);
     const user = await UsersRepository.create(username, hashedPassword, email);
-    const secret = process.env.JWT_SECRET as string;
+    const secret = config.DEV.JWT_SECRET;
 
     return jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: EXPIRES_IN });
   }
 
   static async login(password: string, email: string): Promise<string> {
-    const secret = process.env.JWT_SECRET as string;
     const user = await UsersRepository.findByEmail(email);
 
     if (!user) {
@@ -35,6 +35,8 @@ export class AuthService {
     if (!isPasswordCorrect) {
       throw new UnauthorizedError(AUTHENTIFICATION_ERROR_MESSAGE.INVALID_PASSWORD);
     }
+
+    const secret = config.DEV.JWT_SECRET;
 
     return jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: EXPIRES_IN });
   }

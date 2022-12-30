@@ -16,8 +16,22 @@ export class UsersService {
     return user;
   }
 
-  static async getStats(userId: number): Promise<UserStats | null> {
-    const stats = UsersRepository.getStats(userId);
+  static async findByEmail(email: string): Promise<User | null> {
+    const user = await UsersRepository.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundError(USERS_ERROR_MESSAGE.NOT_FOUND);
+    }
+
+    return user;
+  }
+
+  static async getStats(userId: number): Promise<UserStats> {
+    const stats = await UsersRepository.getStats(userId);
+
+    if (!stats) {
+      throw new NotFoundError(USERS_ERROR_MESSAGE.NOT_FOUND);
+    }
 
     return stats;
   }

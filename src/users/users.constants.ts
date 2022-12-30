@@ -13,7 +13,7 @@ enum STATS {
   COMPLETED_GAMES_COUNT = 'completedGamesCount',
   WINS_COUNT = 'winsCount',
   LOSSES_COUNT = 'lossesCount',
-  DRAW_COUNT = 'drawCount',
+  DRAWS_COUNT = 'drawsCount',
   AVERAGE_STEPS_COUNT_TO_WIN = 'averageStepsCountToWin',
 }
 
